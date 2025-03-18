@@ -14,7 +14,7 @@ const options = program.opts();
 logger.setLevel(options.logLevel.toLowerCase() as LogLevel);
 
 const loggerConfig: LoggingConfig = {
-  destination: path.join(process.cwd(), `${CxAgent.getName()}.log`)
+  destination: path.join(process.cwd(), `CxAgent.log`)
 };
 
 // Create readline interface
@@ -63,7 +63,7 @@ function setupResponseHandler(session: any) {
     session.onEvent((response: any) => {
         console.log("event");
         if (typeof response === 'string') {
-            process.stdout.write(`\n${CxAgent.getName()}: `);
+            process.stdout.write(`\nCxAgent: `);
             process.stdout.write("Structured output to be handled by a tool:\n");
             process.stdout.write(JSON.stringify(response, null, 2));
             process.stdout.write(`\n\n${defaultPrompt}`);
@@ -71,12 +71,12 @@ function setupResponseHandler(session: any) {
             if ('clarification' in response) {
                 const { questions } = response.clarification;
                 if (questions) {
-                    console.log(`${CxAgent.getName()}: ${questions.join('\n')}`);
+                    console.log(`CxAgent: ${questions.join('\n')}`);
                 }
             } else if ('confirmation' in response) {
                 const { prompt, options } = response.confirmation;
                 if (prompt) {
-                    console.log(`${CxAgent.getName()}: ${prompt}`);
+                    console.log(`CxAgent: ${prompt}`);
                     if (options) {
                         console.log(`Options: ${options.join(', ')}`);
                     }
@@ -84,13 +84,13 @@ function setupResponseHandler(session: any) {
             } else if ('exception' in response) {
                 const { reason, suggestedAction } = response.exception;
                 if (reason) {
-                    console.log(`${CxAgent.getName()} Error: ${reason}`);
+                    console.log(`CxAgent Error: ${reason}`);
                     if (suggestedAction) {
                         console.log(`Suggestion: ${suggestedAction}`);
                     }
                 }
             } else {
-                process.stdout.write(`\n${CxAgent.getName()}: `);
+                process.stdout.write(`\nCxAgent: `);
                 process.stdout.write("Structured output to be handled by a tool:\n");
                 process.stdout.write(JSON.stringify(response, null, 2));
                 process.stdout.write(`\n\n${defaultPrompt}`);
@@ -99,7 +99,7 @@ function setupResponseHandler(session: any) {
     });
 
     session.onException((response: any) => {
-        console.log(`${CxAgent.getName()} Error:`, JSON.stringify(response, null, 2));
+        console.log(`CxAgent Error:`, JSON.stringify(response, null, 2));
     });
 
     session.onConversation((response: any) => {
@@ -137,7 +137,7 @@ async function handleChat(session: any): Promise<void> {
 // Main chat loop
 async function chatLoop(): Promise<void> {
     try {
-        console.log("~~~ Welcome to the CxAgent ~~~");
+        console.log("~~~ Welcome to the Customer Experience Agent ~~~");
         console.log("Type '/exit' to end the conversation.");
 
         const initialInput = await handleInitialInput();

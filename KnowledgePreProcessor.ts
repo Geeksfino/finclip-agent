@@ -8,7 +8,7 @@ const runtime = createRuntime();
 /**
  * A query preprocessor that enhances queries with information from an MCP-based knowledge base
  */
-export class McpKnowledgePreProcessor implements QueryPreProcessor {
+export class KnowledgePreProcessor implements QueryPreProcessor {
   private mcpTool: McpTool | null = null;
   
   /**
@@ -99,8 +99,8 @@ export class McpKnowledgePreProcessor implements QueryPreProcessor {
  * @param configPath Optional path to the MCP configuration file
  * @returns Promise that resolves to a preprocessor or null if initialization fails
  */
-export async function createMcpKnowledgePreProcessor(configPath?: string): Promise<McpKnowledgePreProcessor | null> {
-  const preprocessor = new McpKnowledgePreProcessor();
+export async function createMcpKnowledgePreProcessor(configPath?: string): Promise<KnowledgePreProcessor | null> {
+  const preprocessor = new KnowledgePreProcessor();
   const initialized = await preprocessor.initialize(configPath);
   
   return initialized ? preprocessor : null;

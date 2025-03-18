@@ -18,19 +18,19 @@ const PORT = parseInt(options.port, 10);
 logger.setLevel(options.logLevel.toLowerCase() as LogLevel);
 
 const loggerConfig: LoggingConfig = {
-  destination: path.join(process.cwd(), `${CxAgent.getName()}-server.log`)
+  destination: path.join(process.cwd(), `CxAgent-server.log`)
 };
 
 // Initialize the agent
 CxAgent.run(loggerConfig);
-logger.info(`${CxAgent.getName()} initialized`);
+logger.info(`CxAgent initialized`);
 
 // Create HTTP server
 const server = http.createServer((req, res) => {
   // Basic routing for REST API
   if (req.url === '/api/health') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ status: 'ok', agent: CxAgent.getName() }));
+    res.end(JSON.stringify({ status: 'ok', agent: 'CxAgent' }));
     return;
   }
 
@@ -100,8 +100,8 @@ wss.on('connection', (ws) => {
 
 // Start the server
 server.listen(PORT, () => {
-  logger.info(`${CxAgent.getName()} server running on port ${PORT}`);
-  console.log(`${CxAgent.getName()} server running on port ${PORT}`);
+  logger.info(`CxAgent server running on port ${PORT}`);
+  console.log(`CxAgent server running on port ${PORT}`);
 });
 
 // Handle graceful shutdown
