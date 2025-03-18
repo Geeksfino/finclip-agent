@@ -1,0 +1,21 @@
+default: postgres
+
+connections:
+  sqlite:
+    provider: sqlite
+    connection:
+      dialect: sqlite
+      storage: ":memory:"
+
+  postgres:
+    provider: postgres
+    connection:
+      dialect: postgres
+      host: ${DB_HOST:-localhost}
+      port: ${DB_PORT:-5432}
+      database: ${DB_NAME:-postgres}
+      username: ${DB_USER:-postgres}
+      password: ${DB_PASSWORD:-}
+      ssl: ${DB_SSL:-false}
+      pool:
+        max: 5

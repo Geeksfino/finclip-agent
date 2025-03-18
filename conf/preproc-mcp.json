@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "finclip-rag-server": {
+      "command": "/Users/cliang/repos/mygithub/tmp/.venv/bin/kb-mcp-server",
+      "args": [
+        "--embeddings",
+        "/Users/cliang/repos/mygithub/finclip-kb/finclip.tar.gz",
+        "--enable-causal-boost"
+      ],
+      "cwd": "/Users/cliang/repos/mygithub/tmp"
+    }
+  }
+}
