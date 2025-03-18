@@ -1,8 +1,8 @@
 import { CxAgent } from './CxAgent';
 import readline from 'readline';
-import { Logger, logger, LogLevel, LoggingConfig } from '@finogeek/actgent/core';
+import { LoggingConfig } from "@finogeek/actgent/core";
+import { Logger, logger, LogLevel} from '@finogeek/actgent/core'
 import path from "path";
-import os from "os";
 import { program } from 'commander';
 
 // Configure command line options
@@ -26,7 +26,6 @@ CxAgent.run(loggerConfig);
 CxAgent.registerStreamCallback((delta: string) => {
     process.stdout.write(".");
 });
-
 
 // Add prompt configuration
 const defaultPrompt = "You: ";
@@ -103,7 +102,7 @@ function setupResponseHandler(session: any) {
     });
 
     session.onConversation((response: any) => {
-        process.stdout.write(`\n${CxAgent.getName()}: `);
+        process.stdout.write(`\nCxAgent: `);
         process.stdout.write(JSON.stringify(response, null, 2));
         process.stdout.write(`\n\n${defaultPrompt}`);
     });
@@ -153,5 +152,12 @@ async function chatLoop(): Promise<void> {
         process.exit(0);
     }
 }
+
+// Handle graceful shutdown
+process.on('SIGINT', async () => {
+    console.log("\nShutting down...");
+    await CxAgent.shutdown();
+    process.exit(0);
+});
 
 chatLoop();
