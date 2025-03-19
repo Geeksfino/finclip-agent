@@ -20,9 +20,9 @@ export function ChatApp() {
 
   // Sample prompt suggestions
   const suggestions = [
-    "What can you help me with?",
-    "Explain how to use CxAgent",
-    "Tell me about your capabilities"
+    "What is a SuperApp?",
+    "Explain to me Mini-program technology",
+    "How does FinClip enable SuperApps?"
   ]
 
   // Add a local state to track when the connection is being established
@@ -40,7 +40,7 @@ export function ChatApp() {
   return (
     <div className="flex flex-col h-screen">
       <header className="border-b p-4 flex items-center justify-between">
-        <h1 className="text-xl font-semibold">CxAgent Chat</h1>
+        <h1 className="text-xl font-semibold">FinClip Agent</h1>
         {isConnecting && (
           <div className="flex items-center text-yellow-600">
             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -59,7 +59,7 @@ export function ChatApp() {
         <div className="mx-auto max-w-4xl h-full">
           {error && (
             <div className="bg-red-50 text-red-800 p-4 rounded-md mb-4">
-              Error: {error.message}
+              Reminder: {error.message}
               <button 
                 onClick={reset}
                 className="ml-2 underline text-sm"

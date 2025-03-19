@@ -64,10 +64,10 @@ export function useChat({
       // Check if we already have an assistant message as the last message
       const lastMessage = prevMessages[prevMessages.length - 1]
       if (lastMessage && lastMessage.role === 'assistant') {
-        // Update the last message instead of adding a new one
+        // Append to the last message content instead of replacing it
         return [
           ...prevMessages.slice(0, -1),
-          { ...lastMessage, content }
+          { ...lastMessage, content: lastMessage.content + content }
         ]
       }
       
