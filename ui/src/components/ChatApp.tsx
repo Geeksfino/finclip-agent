@@ -2,7 +2,7 @@ import { useChat } from './hooks/use-chat'
 import { Chat } from './ui/chat'
 import { Message } from './ui/chat-message'
 import { useState, useEffect } from 'react'
-import { Loader2 } from 'lucide-react'
+import { TypingIndicator } from './ui/typing-indicator'
 
 export function ChatApp() {
   const {
@@ -43,14 +43,14 @@ export function ChatApp() {
         <h1 className="text-xl font-semibold">FinClip Agent</h1>
         {isConnecting && (
           <div className="flex items-center text-yellow-600">
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            <span className="text-sm">Connecting...</span>
+            <TypingIndicator />
+            <span className="text-sm ml-2">Connecting...</span>
           </div>
         )}
         {isGenerating && (
           <div className="flex items-center text-blue-600">
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            <span className="text-sm">Thinking...</span>
+            <TypingIndicator />
+            <span className="text-sm ml-2">Thinking...</span>
           </div>
         )}
       </header>
