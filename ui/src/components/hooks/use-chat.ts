@@ -13,13 +13,17 @@ export interface UseChatOptions {
   initialMessages?: ChatMessage[]
   onFinish?: (message: ChatMessage) => void
   onError?: (error: Error) => void
+  apiUrl?: string
+  streamingUrl?: string
 }
 
 export function useChat({
   id = 'user',
   initialMessages = [],
   onFinish,
-  onError
+  onError,
+  apiUrl = 'http://localhost:5678',
+  streamingUrl = 'http://localhost:5679'
 }: UseChatOptions = {}) {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages)
   const [input, setInput] = useState('')
@@ -82,11 +86,13 @@ export function useChat({
   const createSession = useCallback(async (message: string): Promise<string | undefined> => {
     try {
       console.log('Creating new session...')
-      const response = await fetch('http://localhost:5678/createSession', {
+      const response = await fetch(`${apiUrl}/createSession`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        // Only include credentials if not on localhost
+        ...(apiUrl.includes('localhost') ? {} : { credentials: 'include' }),
         body: JSON.stringify({ 
           owner: id,
           description:message,
@@ -97,6 +103,10 @@ export function useChat({
       console.log(`Response status: ${response.status} ${response.statusText}`)
       
       if (!response.ok) {
+        // Handle CORS errors specifically
+        if (response.status === 0) {
+          throw new Error('CORS error: The server is not allowing cross-origin requests. Check server CORS configuration.')
+        }
         throw new Error(`Failed to create session: ${response.statusText}`)
       }
 
@@ -116,7 +126,7 @@ export function useChat({
       onError?.(error)
       return undefined
     }
-  }, [id, onError])
+  }, [id, onError, apiUrl])
 
   const setupResponseHandling = useCallback((): Promise<void> => {
     return new Promise((resolve, reject) => {
@@ -125,8 +135,8 @@ export function useChat({
         return;
       }
       
-      //const url = `http://localhost:5679/session/${sessionRef.current}`
-      const url = `http://localhost:5679/raw`
+      //const url = `${streamingUrl}/session/${sessionRef.current}`// don't remove
+      const url = `${streamingUrl}/raw`
       console.log(`Setting up event source at ${url}`)
       
       // Close existing stream if any
@@ -137,7 +147,7 @@ export function useChat({
       try {
         // Create new event source with explicit credentials setting
         const eventSource = new EventSource(url, {
-          withCredentials: false
+          withCredentials: false // Set back to false until backend CORS is updated
         })
         streamRef.current = eventSource
         
@@ -284,7 +294,7 @@ export function useChat({
         reject(error);
       }
     });
-  }, [onError, appendAssistantMessage, setIsGenerating, setIsLoading, setError])
+  }, [onError, appendAssistantMessage, setIsGenerating, setIsLoading, setError, streamingUrl])
 
   const handleSubmit = useCallback(async (e?: FormEvent) => {
     e?.preventDefault()
@@ -322,11 +332,13 @@ export function useChat({
         }
       } else {
         // Send message to existing session
-        const response = await fetch(`http://localhost:5678/chat`, {
+        const response = await fetch(`${apiUrl}/chat`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
+          // Only include credentials if not on localhost
+          ...(apiUrl.includes('localhost') ? {} : { credentials: 'include' }),
           body: JSON.stringify({ 
             sessionId: sessionRef.current,
             message: input
@@ -334,6 +346,10 @@ export function useChat({
         })
         
         if (!response.ok) {
+          // Handle CORS errors specifically
+          if (response.status === 0) {
+            throw new Error('CORS error: The server is not allowing cross-origin requests. Check server CORS configuration.')
+          }
           throw new Error(`Failed to send message: ${response.statusText}`)
         }
       }
@@ -353,7 +369,8 @@ export function useChat({
     appendUserMessage, 
     createSession, 
     setupResponseHandling, 
-    onError
+    onError, 
+    apiUrl
   ])
           
   const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>) => {

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FinClip Chat Widget Demo</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    header {
+      background-color: #f8f9fa;
+      padding: 20px;
+      margin-bottom: 30px;
+      border-radius: 8px;
+    }
+    h1 {
+      margin: 0;
+      color: #2563eb;
+    }
+    .content {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+    .card {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .card h2 {
+      color: #2563eb;
+      margin-top: 0;
+    }
+    code {
+      display: block;
+      background-color: #f1f5f9;
+      padding: 15px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>FinClip Chat Widget - External Website Demo</h1>
+    <p>This page demonstrates how to embed the FinClip chat widget on any website.</p>
+  </header>
+
+  <div class="content">
+    <div class="card">
+      <h2>About FinClip</h2>
+      <p>FinClip is a SuperApp platform that enables businesses to deliver mini-program experiences to their customers.</p>
+      <p>Our platform allows you to build once and deploy across multiple platforms, creating a seamless ecosystem for your users.</p>
+    </div>
+    
+    <div class="card">
+      <h2>Mini-Program Technology</h2>
+      <p>Mini-programs are lightweight applications that run inside a host app without requiring installation.</p>
+      <p>They offer native-like performance with web-like development simplicity, making them ideal for a wide range of use cases.</p>
+    </div>
+    
+    <div class="card">
+      <h2>Integration Guide</h2>
+      <p>Adding the FinClip chat widget to your website is simple. Just include our script and add a single line of code:</p>
+      <code>
+        &lt;!-- Simple embedding --&gt;<br>
+        &lt;script src="https://your-domain.com/finclip-chat.js" data-finclip-chat&gt;&lt;/script&gt;
+      </code>
+      <p>For advanced configuration, you can initialize the widget manually:</p>
+      <code>
+        &lt;script src="https://your-domain.com/finclip-chat.js"&gt;&lt;/script&gt;<br>
+        &lt;script&gt;<br>
+        &nbsp;&nbsp;window.initFinClipChat({<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;buttonLabel: "Chat with Support",<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;initialOpen: false,<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;suggestions: ["How do I get started?", "What are your pricing plans?"],<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;suggestionsLabel: "Frequently Asked Questions",<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;apiUrl: "https://api.your-domain.com",<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;streamingUrl: "https://streaming.your-domain.com"<br>
+        &nbsp;&nbsp;});<br>
+        &lt;/script&gt;
+      </code>
+    </div>
+  </div>
+
+  <!-- This script would normally be loaded from a CDN, but for demo purposes we're using a local path -->
+  <script src="/finclip-chat.js" data-finclip-chat></script>
+</body>
+</html>

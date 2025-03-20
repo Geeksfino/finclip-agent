@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
+import { resolve } from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -24,6 +25,17 @@ export default defineConfig({
     }
   },
   build: {
-    target: 'esnext'
+    target: 'esnext',
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        embed: resolve(__dirname, 'src/embed.ts')
+      },
+      output: {
+        entryFileNames: (chunkInfo) => {
+          return chunkInfo.name === 'embed' ? 'finclip-chat.js' : 'assets/[name]-[hash].js'
+        }
+      }
+    }
   }
 })

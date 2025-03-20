@@ -23,7 +23,7 @@ export function MessageList({
   messageOptions,
 }: MessageListProps) {
   return (
-    <div className="space-y-4 overflow-visible">
+    <div className="space-y-4 overflow-visible px-3">
       {messages.map((message, index) => {
         const additionalOptions =
           typeof messageOptions === "function"
