@@ -17,12 +17,24 @@ CxAgent is an AI-powered customer experience agent built on the actgent framewor
 
 ## Installation
 
+### Local Development
+
 Clone the repository and install dependencies:
 
 ```bash
 git clone https://github.com/yourusername/cxagent.git
 cd cxagent
 bun install
+```
+
+### Global Installation (when published)
+
+```bash
+# Install globally with bun
+bun install -g @finogeek/cxagent
+
+# Or run directly without installing
+bunx @finogeek/cxagent
 ```
 
 ## Configuration
@@ -35,6 +47,13 @@ cp .agent.env.example .agent.env
 
 2. Edit `.agent.env` with your language model API key and other configuration options.
 
+**Note**: When running CxAgent with `bunx`, the tool will look for the `.agent.env` file and configuration files in your current working directory. Make sure to create these files in the directory where you'll be running the command.
+
+Required configuration files:
+- `.agent.env` - Environment variables for API keys and settings
+- `brain.md` - Agent instructions and capabilities (optional, will use default if not present)
+- `conf/` directory - Configuration files for various components
+
 ## Usage
 
 ### Command Line Interface
@@ -42,8 +61,11 @@ cp .agent.env.example .agent.env
 Run the CLI for direct interaction with the agent:
 
 ```bash
-# Run the CLI
-bun index.ts
+# Development mode
+bun run dev
+
+# Or if installed globally
+bunx @finogeek/cxagent
 ```
 
 ### Web Application
@@ -60,7 +82,10 @@ The web application consists of two parts:
 bun run build
 
 # Run the application (starts both API and streaming servers)
-bun index.ts
+bun run start
+
+# Or if installed globally
+bunx @finogeek/cxagent
 ```
 
 This will start:
@@ -79,6 +104,36 @@ This will start the Vite development server at `http://localhost:5173`.
 
 
 
+## Building and Publishing
+
+### Building the Project
+
+```bash
+# Build backend only
+bun run build
+
+# Build frontend only
+bun run build:web
+
+# Build everything (backend and frontend)
+bun run build:all
+```
+
+### Publishing to npm
+
+Before publishing, make sure to build the project:
+
+```bash
+# Clean and rebuild everything
+bun run rebuild:all
+
+# Preview what will be published
+bun pack --dry-run
+
+# Publish to npm registry
+bun publish
+```
+
 ## Project Structure
 
 - `CxAgent.ts` - Main agent implementation
@@ -89,14 +144,53 @@ This will start the Vite development server at `http://localhost:5173`.
 
 ## Embedding the Chat Widget
 
-The chat widget can be easily embedded into any website. Here's how to do it:
+The chat widget (`finclip-chat.js`) is included in the npm package and can be used in multiple ways:
 
-### Basic Embedding
+### Option 1: Host on a CDN (Recommended for Production)
 
-Add the following script to your HTML:
+1. Build the widget:
+   ```bash
+   bun run build:web
+   ```
+
+2. Upload the `web/dist/finclip-chat.js` and `web/dist/assets/` directory to your preferred CDN
+
+3. Add to your HTML:
+   ```html
+   <script src="https://your-cdn.com/finclip-chat.js" data-finclip-chat></script>
+   ```
+
+### Option 2: Self-host from the npm Package
+
+If you've installed the package via npm/bun:
 
 ```html
-<script src="https://your-domain.com/finclip-chat.js" data-finclip-chat></script>
+<script src="./node_modules/@finogeek/cxagent/web/dist/finclip-chat.js" data-finclip-chat></script>
+```
+
+### Option 3: Serve from your CxAgent Server
+
+If running your own cxagent server, you can configure it to serve the widget files:
+
+1. In your server code, add routes to serve the widget files
+2. Reference it in your HTML:
+   ```html
+   <script src="http://your-server:5678/finclip-chat.js" data-finclip-chat></script>
+   ```
+
+### Configuration
+
+The widget can be configured with data attributes:
+
+```html
+<script 
+  src="https://your-domain.com/finclip-chat.js" 
+  data-finclip-chat 
+  data-api-url="https://your-api-server:5678" 
+  data-streaming-url="wss://your-streaming-server:5679"
+  data-theme="light"
+  data-position="right"
+></script>
 ```
 
 This will add a floating chat button to your website with default settings.

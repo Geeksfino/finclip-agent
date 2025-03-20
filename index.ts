@@ -1,3 +1,5 @@
+#!/usr/bin/env bun
+
 import { CxAgent } from './CxAgent';
 import readline from 'readline';
 import { LoggingConfig } from "@finogeek/actgent/core";

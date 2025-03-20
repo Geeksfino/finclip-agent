@@ -4,19 +4,34 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "bin": {
+    "cxagent": "dist/index.js"
+  },
   "scripts": {
-    "build": "bun tsc && bun run build:assets",
-    "build:assets": "bun cpx \"conf/**/*.{md,json,yaml}\" dist/conf/ --clean",
+    "dev": "bun run index.ts",
+    "start": "bun run dist/index.js",
+    "build": "bun tsc && bun run build:assets && chmod +x dist/index.js",
+    "build:assets": "cp brain.md dist/ && mkdir -p dist/conf && cp -r conf/* dist/conf/ && cp .agent.env dist/ 2>/dev/null || true",
+    "build:web": "cd web && bun install && bun run build",
+    "build:all": "bun run build && bun run build:web",
     "test": "vitest run",
     "test:watch": "vitest",
     "watch:ts": "bun tsc-watch",
-    "watch:resources": "bun cpx \"conf/**/*.{md,json,yaml}\" dist/conf/ --watch",
-    "watch": "bun concurrently \"bun run watch:ts\" \"bun run watch:resources\"",
-    "dev:cli": "bun --watch cli.ts",
-    "dev:server": "bun --watch server.ts",
+    "watch": "bun concurrently \"bun run watch:ts\"",
     "clean": "rm -rf dist",
-    "rebuild": "bun run clean && bun run build"
+    "clean:all": "bun run clean && rm -rf web/dist web/node_modules",
+    "rebuild": "bun run clean && bun run build",
+    "rebuild:all": "bun run clean:all && bun run build:all"
   },
+  "engines": {
+    "bun": ">=1.0.0"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "web/dist/finclip-chat.js",
+    "web/dist/assets/**"
+  ],
   "dependencies": {
     "@finogeek/actgent": "^1.0.4",
     "commander": "^12.1.0",
@@ -27,8 +42,6 @@
   "devDependencies": {
     "bun-types": "^1.1.38",
     "concurrently": "^9.1.0",
-    "cpx2": "^8.0.0",
-    "tsc-watch": "^6.2.1",
     "typescript": "^5.6.3",
     "vitest": "^2.1.8"
   }
