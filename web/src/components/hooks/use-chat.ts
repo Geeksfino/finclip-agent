@@ -135,8 +135,8 @@ export function useChat({
         return;
       }
       
-      //const url = `${streamingUrl}/session/${sessionRef.current}`// don't remove
-      const url = `${streamingUrl}/raw`
+      const url = `${streamingUrl}/session/${sessionRef.current}`// don't remove
+      //const url = `${streamingUrl}/raw?sessionId=${sessionRef.current}` 
       console.log(`Setting up event source at ${url}`)
       
       // Close existing stream if any

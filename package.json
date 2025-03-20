@@ -18,7 +18,7 @@
     "rebuild": "bun run clean && bun run build"
   },
   "dependencies": {
-    "@finogeek/actgent": "^1.0.2",
+    "@finogeek/actgent": "^1.0.4",
     "commander": "^12.1.0",
     "dotenv": "^16.4.7", 
     "uuid": "^9.0.1",
