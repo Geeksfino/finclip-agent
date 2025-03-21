@@ -3,6 +3,7 @@ import { ChatContainer, ChatForm, ChatMessages } from './ui/chat'
 import { MessageInput } from './ui/message-input'
 import { MessageList } from './ui/message-list'
 import { PromptSuggestions } from './ui/prompt-suggestions'
+import { CopyButton } from './ui/copy-button'
 
 // Define props interface for ChatApp
 interface ChatAppProps {
@@ -14,7 +15,7 @@ interface ChatAppProps {
 
 export function ChatApp({ 
   suggestions = [], 
-  suggestionsLabel = "Try these prompts ✨",
+  suggestionsLabel = "Try these prompts ",
   apiUrl = "http://localhost:5678",
   streamingUrl = "http://localhost:5679"
 }: ChatAppProps) {
@@ -84,6 +85,14 @@ export function ChatApp({
               <MessageList 
                 messages={messages} 
                 isTyping={isGenerating} 
+                messageOptions={(message) => ({
+                  actions: message.role === "assistant" ? (
+                    <CopyButton
+                      content={message.content}
+                      copyMessage="Copied response to clipboard!"
+                    />
+                  ) : undefined,
+                })}
               />
             )}
           </div>
