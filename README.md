@@ -9,7 +9,7 @@ First make sure the following prerequisites are met:
 ### Prerequisites
 
 - [Bun](https://bun.sh/) runtime (v1.0.0 or higher)
-- API key for the language model provider
+- API key for an OpenAI compatible language model provider
 
 ### Setup local environment
 
