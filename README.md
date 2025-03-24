@@ -199,35 +199,24 @@ Required configuration files:
 Run the CLI for direct interaction with the agent:
 
 ```bash
+# cd into project folder
+
 # Development mode
 bun run dev
 
 # Production mode
+bun run build
 bun run start
 ```
-
-### Web Application
-
-The web application consists of two parts:
-
-1. **Backend API and Streaming Servers**
-2. **Frontend Chat Widget**
-
-#### Running the Backend
-
-```bash
-# Build the project
-bun run build
-
-# Run the application (starts both API and streaming servers)
-bun run dev
-```
-
 This will start:
 - API Server on port 5678 (handles session creation and message processing)
 - Streaming Server on port 5679 (handles real-time streaming of AI responses)
 
-#### Running the Frontend (Development)
+**Notes**: ports are configurable via `.agent.env` file.
+
+### Web Frontend Chat Widget
+
+The web frontend chat widget is a separate Vite application that you can run and embed in your own web application.
 
 ```bash
 cd web
@@ -236,6 +225,8 @@ bun run dev
 ```
 
 This will start the Vite development server at `http://localhost:5173`.
+
+Point your browser to `http://localhost:5173` to see the chat widget.
 
 ### Accessing the Chat Frontend Without Development Server
 
