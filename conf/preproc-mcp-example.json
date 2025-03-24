@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "some-rag-server": {
+      "command": "/path/to/kb-mcp-server",
+      "args": [
+        "/path/to/some-knowledgebase/some-data",
+        "--some-param",
+        "some-value"
+      ],
+      "cwd": "/path/to/working/directory"
+    }
+  }
+}

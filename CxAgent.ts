@@ -30,7 +30,7 @@ const CxAgent = new AgentBuilder(agentConfig, svcConfig)
       CxAgent.setQueryPreProcessor(preprocessor);
       console.log('MCP Knowledge preprocessor initialized and set up with the agent');
     } else {
-      console.warn('Failed to initialize MCP Knowledge preprocessor');
+      console.debug('No MCP Knowledge preprocessor configured');
     }
   } catch (error) {
     console.error('Error setting up MCP Knowledge preprocessor:', error);
