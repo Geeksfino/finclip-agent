@@ -1,6 +1,36 @@
 # CxAgent
 
-CxAgent is an AI-powered customer experience agent built on the actgent framework. It provides automated customer support through natural language interaction via both CLI and web interfaces. It can use MCP (Model Context Protocol) server to access knowledge base and other services. Its frontend is embeddable to any website. 
+CxAgent is an AI-powered customer experience agent built on the actgent framework. It provides automated customer support through natural language interaction via both CLI and web interfaces. It can use MCP (Model Context Protocol) server to access knowledge base and other services. Its frontend is embeddable to any website.
+
+## Table of Contents
+
+- [Quick Start](#quick-start)
+  - [Prerequisites](#prerequisites)
+  - [Setup Local Environment](#setup-local-environment)
+  - [Start the Server](#start-the-server)
+  - [Embed the Chatbot in a Website](#embed-the-chatbot-in-a-website)
+- [Advanced Usage](#advanced-usage)
+  - [MCP Knowledge Base Integration](#mcp-knowledge-base-integration)
+  - [MCP Servers](#mcp-servers)
+- [Installation For Local Development](#installation-for-local-development)
+  - [Global Installation](#global-installation)
+  - [Configuration](#configuration)
+  - [Command Line Interface](#command-line-interface)
+  - [Web Frontend Chat Widget](#web-frontend-chat-widget)
+  - [Accessing the Chat Frontend Without Development Server](#accessing-the-chat-frontend-without-development-server)
+- [Building and Publishing](#building-and-publishing)
+- [Project Structure](#project-structure)
+- [Embedding the Chat Widget](#embedding-the-chat-widget)
+  - [Configuration Options](#configuration-options)
+  - [CORS Configuration](#cors-configuration)
+- [Development Workflow](#development-workflow)
+  - [Development Testing URLs](#development-testing-urls)
+  - [Building for Production](#building-for-production)
+  - [Understanding the Embedding Scripts](#understanding-the-embedding-scripts)
+  - [CDN Deployment](#cdn-deployment)
+  - [Cross-Domain Testing](#cross-domain-testing)
+  - [Using CXAgent with `bunx`](#using-cxagent-with-bunx)
+- [License](#license)
 
 ## Quick start
 
@@ -14,10 +44,10 @@ First make sure the following prerequisites are met:
 ### Setup local environment
 
 - Create a new directory for your agent
-- Create a `.agent.env` file in the directory
+- **Important**: Create a `.agent.env` file in the directory with your API key and configuration
 
 ```bash
-# LLM Configuration
+# LLM Configuration - REQUIRED
 LLM_API_KEY=your_api_key_here
 LLM_PROVIDER_URL=https://your-openai-compatible-provider-url
 LLM_MODEL=your-model-name
@@ -29,6 +59,8 @@ AGENT_HTTP_PORT=5678
 AGENT_STREAM_PORT=5679
 AGENT_ENABLE_STREAMING=true
 ```
+
+**Note**: The `.agent.env` file is required for CXAgent to function properly. Without it, the agent will not be able to connect to an LLM provider.
 - Give your agent a 'brain' by creating a `brain.md` file in the project directory. Below is an example:
 
 ```markdown
@@ -69,12 +101,31 @@ bunx @finogeek/cxagent
 ```
 That's it. This should start a chatbot that does nothing but respond to user messages. You can use the CLI to chat with it.
 
-**Note**: When running CxAgent with `bunx`, the tool will look for the `.agent.env` file and configuration files in your current working directory. Make sure to create these files in the directory where you'll be running the command.
+**Important**: When running CxAgent with `bunx`, the tool will first look for the `.agent.env` and `brain.md` files in your current working directory. If these files exist, they will be used instead of the default ones bundled with the package. This allows you to customize the agent's behavior without modifying the package itself.
 
-Required configuration files:
+The `.agent.env` file containing a valid LLM API key is required for the agent to function properly. Make sure to create this file in the directory where you'll be running the command.
+
+## Configuration Files
+
+### Required Configuration Files
 - `.agent.env` - Environment variables for API keys and settings
 - `brain.md` - Agent instructions and capabilities (optional, will use default if not present)
-- `conf/` directory - Configuration files for various components but not required 
+- `conf/` directory - Configuration files for various components but not required
+
+### Configuration Priority
+When running CxAgent, it will look for configuration files in the following order:
+
+1. User-supplied files in the current working directory
+2. Default files bundled with the package
+
+This allows you to customize the agent's behavior without modifying the package itself.
+
+### Security Best Practices
+
+1. **Never commit sensitive information**: Ensure `.agent.env` is listed in your `.gitignore` file
+2. **Use the example template**: Copy `.agent.env.example` to `.agent.env` and add your own API keys
+3. **Keep API keys private**: Never share your `.agent.env` file containing real API keys
+4. **Rotate compromised keys**: If you accidentally expose your API keys, rotate them immediately
 
 ### Embed the chatbot in a website
 
@@ -226,7 +277,14 @@ bun run dev
 
 This will start the Vite development server at `http://localhost:5173`.
 
-Point your browser to `http://localhost:5173` to see the chat widget.
+Point your browser to `http://localhost:5173` to see the chat widget, or access the examples at `http://localhost:5173/examples/`.
+
+The chat widget includes advanced features such as:
+- Message deduplication to prevent duplicate responses from streaming servers
+- Configurable backend URLs for API and streaming servers
+- CORS handling for cross-origin requests with proper credentials management
+- Error handling for network and server issues
+- Standalone mode for full-page chat experience
 
 ### Accessing the Chat Frontend Without Development Server
 
@@ -327,6 +385,9 @@ bun publish
 - `KnowledgePreProcessor.ts` - Knowledge base integration
 - `brain.md` - Agent instructions and capabilities
 - `web/` - Frontend chat widget implementation
+  - `examples/` - Example HTML files demonstrating different integration scenarios
+  - `src/` - Source code for the React components and hooks
+  - `dist/` - Built files (generated after build)
 
 ## Embedding the Chat Widget
 
@@ -423,6 +484,212 @@ const headers = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization"
 };
 ```
+
+The chat widget has been configured to handle CORS properly:
+
+- For localhost development: `withCredentials` is set to `false` to avoid CORS issues
+- For production: `withCredentials` is set to `true` when the API URL is not localhost
+- All components (ChatApp, FloatingChatWidget, DemoPage) pass apiUrl and streamingUrl parameters
+- Error handling for CORS-related issues is implemented
+
+When testing cross-domain scenarios, use the `/examples/cross-domain-test.html` file to verify your CORS configuration.
+
+## Development Workflow
+
+### Development Testing URLs
+
+You can access the following URLs for testing different integration approaches:
+
+1. **React Component Integration**: `http://localhost:5173`
+   - This loads the main `index.html` in the root directory
+   - Renders the `DemoPage.tsx` component that uses the React component integration approach
+   - Demonstrates how to use the `FloatingChatWidget` component in a React application
+
+2. **Examples Directory**: `http://localhost:5173/examples/`
+   - Contains all standalone examples for different integration scenarios
+   - Access through the examples index page at `http://localhost:5173/examples/index.html`
+
+3. **Standalone Widget**: `http://localhost:5173/examples/standalone-widget.html`
+   - Demonstrates the chat widget in standalone mode without the floating button interface
+   - Useful for testing the full-page chat experience
+
+4. **Embed Script Integration**: `http://localhost:5173/examples/embed-demo.html`
+   - Uses the development embed script (`embed-dev.ts`) which is specifically built for development
+   - Demonstrates how to embed the chat widget on any website using a script tag
+
+5. **Production Embed Demo**: `http://localhost:5173/examples/embed-demo-prod.html`
+   - Uses the production build of the embed script
+   - Demonstrates how the widget behaves in a production environment
+
+6. **Cross-Domain Testing**: `http://localhost:5173/examples/cross-domain-test.html`
+   - Simulates a production environment where the chat widget and backend are on different domains
+   - Useful for testing CORS configurations
+
+### Building for Production
+
+To build the chat widget for production:
+
+```bash
+cd /path/to/cxagent/web
+bun run build
+```
+
+This will generate optimized files in the `dist` directory. For production deployment, the `dist-production` directory is created with all necessary files for embedding the chat widget on any website.
+
+### Serving the Built Files
+
+The project includes a simple Bun-based HTTP server (`serve.ts`) for serving the built files, but it's not mandatory. You can use any web server of your choice:
+
+#### Using the included serve.ts
+```bash
+cd /path/to/cxagent/web
+bun serve.ts 3001 ./dist
+```
+
+#### Alternative Web Servers
+
+1. **Python HTTP Server**:
+   ```bash
+   cd /path/to/cxagent/web/dist
+   python -m http.server 3001
+   ```
+
+2. **Node.js/npm HTTP Server**:
+   ```bash
+   npm install -g http-server
+   cd /path/to/cxagent/web/dist
+   http-server -p 3001 --cors
+   ```
+
+3. **Nginx**: Configure a virtual host to serve the static files from the dist directory
+
+4. **Bun's built-in serve**:
+   ```bash
+   cd /path/to/cxagent/web/dist
+   bun --serve
+   ```
+
+When using an alternative server for cross-domain testing, ensure proper CORS headers are set:
+
+#### Production Build Output
+
+The production build generates the following key files:
+
+- **finclip-chat-embed.iife.js**: The production-ready embed script optimized for deployment
+- **style.css**: The stylesheet for the chat widget
+- **assets/**: Directory containing icons, fonts, and other static assets
+- **sample-embed.html**: A sample HTML file demonstrating how to embed the widget
+
+### Understanding the Embedding Scripts
+
+There are three main embedding script files in the project, which work together to provide a seamless embedding experience for different environments:
+
+1. **embed.ts** (`src/embed.ts`): 
+   - Serves as the base implementation and foundation for the other embed scripts
+   - Provides core functionality for creating the widget container and rendering the React component
+   - Is not used directly by end users, but is built into `finclip-chat.iife.js` during the build process
+   - Implements the basic `window.initFinClipChat()` function that all variants share
+
+2. **embed-dev.ts** (`src/embed-dev.ts`): 
+   - Extends the base functionality with development-specific features
+   - Includes additional logging to help with debugging
+   - Has special handling for API URLs with default localhost values
+   - Is used by the examples/embed-demo.html page during development
+   - Implements CORS handling with conditional credentials based on whether the API URL is localhost
+
+3. **embed-production.ts** (`src/embed-production.ts`): 
+   - The production-optimized version that's built into `finclip-chat-embed.iife.js`
+   - Includes enhanced URL extraction capabilities for production environments
+   - Is used by the examples/cross-domain-test.html for testing cross-domain scenarios
+   - Handles CORS properly for cross-domain usage in production environments
+
+**Note for Developers**: You don't need to directly interact with these source files. When implementing the chat widget:
+- For development: The build system automatically uses the development version
+- For production: Use the pre-built `finclip-chat-embed.iife.js` file from the distribution
+
+All embedding scripts handle CORS configuration and API URL extraction internally, making them simple to use regardless of your hosting environment.
+
+### CDN Deployment
+
+For production deployment, host the built files on a CDN and reference them in your HTML:
+
+```html
+<script src="https://cdn.your-domain.com/finclip-chat-embed.iife.js" data-finclip-chat data-api-url="https://your-api-server.com" data-streaming-url="https://your-streaming-server.com"></script>
+```
+
+### Cross-Domain Testing
+
+The project includes a `cross-domain-test.html` file that simulates a production environment where the chat widget and backend servers are on different domains. This is useful for testing CORS configurations.
+
+To test cross-domain scenarios:
+
+1. Build the production files:
+   ```bash
+   cd /path/to/cxagent/web
+   bun run build
+   ```
+
+2. Serve the production files from a different port (e.g., 3001):
+   ```bash
+   cd /path/to/cxagent/web/dist-production
+   npx http-server -p 3001 --cors
+   ```
+
+3. Open the cross-domain test file in your browser:
+   ```
+   file:///path/to/cxagent/web/cross-domain-test.html
+   ```
+   
+   Or serve it from another port:
+   ```bash
+   cd /path/to/cxagent/web
+   npx http-server -p 3002 --cors
+   # Then access http://localhost:3002/cross-domain-test.html
+   ```
+
+This setup tests:
+- The chat widget script loaded from port 3001
+- The backend API running on port 5678
+- The streaming server running on port 5679
+
+Ensure your backend servers have proper CORS headers configured as mentioned in the CORS section.
+
+### Using CXAgent with `bunx`
+
+If you're using CXAgent via `bunx` instead of cloning the repository, the package includes pre-built scripts for embedding the chat widget. When you install CXAgent using `bunx @finogeek/cxagent`, the following files are included in the package:
+
+- **finclip-chat-embed.iife.js**: The production-ready embed script optimized for deployment
+- **style.css**: The required CSS styles for the chat widget
+- **implementation-guide.html**: A sample HTML file showing how to implement the widget
+
+To set up the embedding frontend UI when using `bunx`:
+
+1. Start the CXAgent backend:
+   ```bash
+   bunx @finogeek/cxagent
+   ```
+
+2. Find the embedding files in the npm package directory:
+   ```bash
+   # Locate the package directory
+   npm list -g @finogeek/cxagent
+   # Or if installed locally
+   ls node_modules/@finogeek/cxagent/web/dist
+   ```
+
+3. Copy the embedding files from the package to your website:
+   ```bash
+   # If installed globally
+   cp -r /path/to/global/node_modules/@finogeek/cxagent/web/dist/* your-website-directory/
+   # If installed locally
+   cp -r node_modules/@finogeek/cxagent/web/dist/* your-website-directory/
+   ```
+
+4. Reference the files in your HTML:
+   ```html
+   <link rel="stylesheet" href="/style.css">
+   <script src="/finclip-chat-embed.iife.js" data-finclip-chat data-api-url="http://localhost:5678" data-streaming-url="http://localhost:5679"></script>
+   ```
 
 ## License
 

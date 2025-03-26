@@ -93,6 +93,7 @@
   </div>
 
   <!-- This script would normally be loaded from a CDN, but for demo purposes we're using a local path -->
-  <script src="/finclip-chat.js" data-finclip-chat></script>
+  <!-- For development, we're using a script that's built specifically for dev mode -->
+  <script type="module" src="/src/embed-dev.ts" data-finclip-chat data-api-url="http://localhost:5678" data-streaming-url="http://localhost:5679"></script>
 </body>
 </html>

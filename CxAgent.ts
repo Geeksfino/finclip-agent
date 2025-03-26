@@ -7,11 +7,38 @@ import { KnowledgePreProcessor } from "./KnowledgePreProcessor";
 const runtime = createRuntime();
 
 // Load the agent configuration from a markdown file
-const configPath = runtime.path.join(__dirname, 'brain.md');
+// First check if brain.md exists in the current working directory
+const cwdBrainPath = runtime.path.join(process.cwd(), 'brain.md');
+const defaultBrainPath = runtime.path.join(__dirname, 'brain.md');
+
+// Determine which brain.md file to use
+let configPath = defaultBrainPath;
+try {
+  await runtime.fs.stat(cwdBrainPath);
+  // If we reach here, the file exists in the current directory
+  console.log(`Using brain.md from current directory: ${cwdBrainPath}`);
+  configPath = cwdBrainPath;
+} catch (error) {
+  // File doesn't exist in current directory, use the default
+  console.log(`No brain.md found in current directory, using default`);
+}
+
 const agentConfig = await AgentCoreConfigurator.loadMarkdownConfig(configPath);
 
-// Load the agent runtime environment from the project root
-const svcConfig = await AgentServiceConfigurator.getAgentConfiguration(__dirname);
+// Load the agent runtime environment
+// Check if .agent.env exists in current working directory first, otherwise use the one in the package
+const cwdEnvPath = runtime.path.join(process.cwd(), '.agent.env');
+const hasCustomEnv = await runtime.fs.exists(cwdEnvPath);
+
+if (hasCustomEnv) {
+  console.log(`Using .agent.env from current directory: ${cwdEnvPath}`);
+} else {
+  console.log(`No .agent.env found in current directory, using default configuration`);
+}
+
+// Pass the current working directory as the base path if a custom .agent.env exists there
+const basePath = hasCustomEnv ? process.cwd() : __dirname;
+const svcConfig = await AgentServiceConfigurator.getAgentConfiguration(basePath);
 
 const CxAgent = new AgentBuilder(agentConfig, svcConfig)
     .create(BareClassifier, BarePromptTemplate);

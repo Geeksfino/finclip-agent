@@ -9,7 +9,8 @@
     "watch": "tsc --watch --noEmit", 
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest",
+    "prepare-dist": "./scripts/prepare-dist.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",

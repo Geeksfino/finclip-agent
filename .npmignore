@@ -1,0 +1,36 @@
+# Development files
+.github/
+.vscode/
+.editorconfig
+.eslintrc
+.prettierrc
+tsconfig.json
+*.test.ts
+*.spec.ts
+tests/
+
+# Build artifacts
+node_modules/
+coverage/
+.nyc_output/
+
+# Environment and secrets
+.env
+.env.*
+*.env
+.agent.env
+conf/.agent.env
+
+# Source files that shouldn't be published
+src/examples/
+*.log
+.DS_Store
+
+# Development web files
+web/node_modules/
+web/public/
+web/src/
+web/vite.config.ts
+web/tsconfig.json
+web/tailwind.config.js
+web/postcss.config.js

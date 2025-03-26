@@ -1,4 +1,4 @@
-import { FloatingChatWidget } from '../components/FloatingChatWidget'
+import { FloatingChatWidget } from '../../components/FloatingChatWidget'
 
 export function DemoPage() {
   // Custom suggestions for the chat widget

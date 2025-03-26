@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Standalone Chat Widget - Development</title>
+  <link rel="stylesheet" href="/src/index.css">
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="module">
+    import React from 'react';
+    import { createRoot } from 'react-dom/client';
+    import { ChatApp } from '/src/components/ChatApp';
+    import '/src/index.css';
+
+    // Create a standalone chat application
+    const StandaloneChat = () => {
+      return React.createElement(
+        'div', 
+        { className: 'min-h-screen bg-gray-50 flex flex-col' },
+        [
+          // Header
+          React.createElement(
+            'header',
+            { className: 'bg-white shadow-sm border-b border-gray-200' },
+            React.createElement(
+              'div',
+              { className: 'max-w-4xl mx-auto px-4 py-4 flex justify-between items-center' },
+              [
+                React.createElement(
+                  'div',
+                  { className: 'flex flex-col' },
+                  [
+                    React.createElement('h1', { className: 'text-xl font-semibold text-blue-600' }, 'Standalone Chat Widget'),
+                    React.createElement('p', { className: 'text-sm text-gray-500' }, 'Direct interface to the chat without the floating button')
+                  ]
+                ),
+                React.createElement(
+                  'nav',
+                  { className: 'flex space-x-4' },
+                  [
+                    React.createElement('a', { href: './index.html', className: 'text-sm text-blue-600 hover:underline' }, 'Examples Home'),
+                    React.createElement('a', { href: './embed-demo.html', className: 'text-sm text-blue-600 hover:underline' }, 'Embed Demo')
+                  ]
+                )
+              ]
+            )
+          ),
+          
+          // Main content
+          React.createElement(
+            'main',
+            { className: 'flex-1 max-w-4xl w-full mx-auto px-4 py-6' },
+            React.createElement(
+              'div',
+              { className: 'bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden h-[calc(100vh-180px)]' },
+              React.createElement(ChatApp, {
+                apiUrl: 'http://localhost:5678',
+                streamingUrl: 'http://localhost:5679',
+                suggestions: [
+                  "What can you help me with?",
+                  "Tell me about FinClip",
+                  "How does cross-domain embedding work?"
+                ],
+                suggestionsLabel: "Try asking:"
+              })
+            )
+          ),
+          
+          // Footer
+          React.createElement(
+            'footer',
+            { className: 'bg-white border-t border-gray-200 py-4' },
+            React.createElement(
+              'div',
+              { className: 'max-w-4xl mx-auto px-4 text-center text-sm text-gray-500' },
+              'This example demonstrates the chat widget in standalone mode without the floating button interface.'
+            )
+          )
+        ]
+      );
+    };
+
+    // Mount the app with proper React component structure
+    const container = document.getElementById('root');
+    const root = createRoot(container);
+    root.render(React.createElement(React.StrictMode, null, React.createElement(StandaloneChat)));
+  </script>
+</body>
+</html>

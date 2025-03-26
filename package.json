@@ -1,6 +1,6 @@
 {
   "name": "@finogeek/cxagent",
-  "version": "1.0.1",
+  "version": "1.0.4",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -11,7 +11,7 @@
     "dev": "bun run index.ts",
     "start": "bun run dist/index.js",
     "build": "bun tsc && bun run build:assets && chmod +x dist/index.js",
-    "build:assets": "cp brain.md dist/ && mkdir -p dist/conf && cp -r conf/* dist/conf/ && cp .agent.env dist/ 2>/dev/null || true",
+    "build:assets": "cp brain.md dist/ && mkdir -p dist/conf && cp -r conf/* dist/conf/ 2>/dev/null || true",
     "build:web": "cd web && bun install && bun run build",
     "build:all": "bun run build && bun run build:web",
     "test": "vitest run",
@@ -19,7 +19,7 @@
     "watch:ts": "bun tsc-watch",
     "watch": "bun concurrently \"bun run watch:ts\"",
     "clean": "rm -rf dist",
-    "clean:all": "bun run clean && rm -rf web/dist web/node_modules",
+    "clean:all": "bun run clean && rm -rf web/dist web/dist-production web/node_modules",
     "rebuild": "bun run clean && bun run build",
     "rebuild:all": "bun run clean:all && bun run build:all"
   },
