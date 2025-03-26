@@ -80,7 +80,7 @@
         <li>
           <a href="./standalone-widget.html">Standalone Widget</a>
           <div class="example-description">
-            A standalone page demonstrating the chat widget in development mode.
+            Demonstrates the chat widget itself as a standalone application.
           </div>
         </li>
         <li>
@@ -92,13 +92,14 @@
         <li>
           <a href="./embed-demo-prod.html">Embed Demo (Prod)</a>
           <div class="example-description">
-            Demonstrates how to embed the chat widget in a website using the production build.
+            Demonstrates how to embed the chat widget in a website. 
           </div>
         </li>
         <li>
           <a href="./cross-domain-test.html">Cross-Domain Test</a>
           <div class="example-description">
             Simulates a production environment where the chat widget and backend servers are on different domains.
+            Mimic production environment where the serving page at one domain embeds the widget script from another domain such as a CDN, which calls the agent service endpoint at yet another domain.
             Used for testing CORS configurations.
           </div>
         </li>
@@ -111,10 +112,10 @@
       <p><strong>Production Mode:</strong> Simulates a real-world scenario where components are on different domains.</p>
       <p>For cross-domain testing, you'll need to run multiple servers:</p>
       <ul>
-        <li>Backend API: http://localhost:5678</li>
-        <li>Streaming Server: http://localhost:5679</li>
-        <li>Widget Script: http://localhost:3001</li>
-        <li>This examples page: Serve from another port (e.g., http://localhost:3002)</li>
+        <li>Run Agent service endpoint for receiving messages: http://localhost:5678</li>
+        <li>Run Agent service endpoint for subscribing to response streams: http://localhost:5679</li>
+        <li>Make CxAgent Chat Widget Script available for embedding at a "CDN": http://localhost:3001</li>
+        <li>This examples page playing the role of an arbitrary Web server (e.g., http://localhost:3002)</li>
       </ul>
     </div>
   </div>
