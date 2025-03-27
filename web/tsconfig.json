@@ -27,5 +27,6 @@
     }
   },
   "include": ["src"],
+  "exclude": ["src/app/dev-server.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

@@ -2,6 +2,7 @@ import { defineConfig, build as viteBuild } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 import { resolve } from 'path'
+import { setupDevServer } from './src/app/dev-server'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command, mode }) => ({
@@ -26,7 +27,8 @@ export default defineConfig(({ command, mode }) => ({
   server: {
     strictPort: true,
     host: true,
-    port: 5173
+    port: 5173,
+    open: false
   },
   optimizeDeps: {
     esbuildOptions: {
@@ -46,6 +48,8 @@ export default defineConfig(({ command, mode }) => ({
   },
   plugins: [
     react(),
+    // Add the dev server plugin for Agent UI
+    setupDevServer(),
     {
       name: 'build-embed-scripts',
       apply: 'build',
