@@ -258,12 +258,36 @@ bun run dev
 # Production mode
 bun run build
 bun run start
+
+# Run with UI for visualizing agent configuration
+bun index.ts --ui
+# or specify a custom port
+bun index.ts --ui --ui-port 3000
 ```
 This will start:
 - API Server on port 5678 (handles session creation and message processing)
 - Streaming Server on port 5679 (handles real-time streaming of AI responses)
+- UI Server (when using `--ui` option) on port 5173 by default (configurable with `--ui-port`)
 
-**Notes**: ports are configurable via `.agent.env` file.
+#### UI Mode
+
+The `--ui` option starts a web server that displays your agent's configuration in a user-friendly interface. This is useful for:
+
+- Visualizing and inspecting your `brain.md` content
+- Understanding your agent's configuration
+- Testing interactions with your agent
+
+When running via `bunx`, you can also use the UI mode:
+
+```bash
+bunx @finogeek/cxagent --ui
+# or with custom port
+bunx @finogeek/cxagent --ui --ui-port 3000
+```
+
+The UI will use the `brain.md` file from your current working directory if available. If no `brain.md` is found, it will display a default template.
+
+**Notes**: ports are configurable via `.agent.env` file or command line options.
 
 ### Web Frontend Chat Widget
 

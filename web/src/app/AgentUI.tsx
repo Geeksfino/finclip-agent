@@ -10,6 +10,11 @@ interface BrainContent {
   example?: string;
 }
 
+interface McpStatus {
+  hasMcpPreproc: boolean;
+  hasMcpConfig: boolean;
+}
+
 export function AgentUI() {
   const [brainContent, setBrainContent] = useState<BrainContent>({
     name: 'Chatbot',
@@ -33,6 +38,8 @@ export function AgentUI() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isUsingDefaultBrain, setIsUsingDefaultBrain] = useState(false);
+  const [mcpStatus, setMcpStatus] = useState<McpStatus>({ hasMcpPreproc: false, hasMcpConfig: false });
   
   // Custom suggestions for the chat widget
   const customSuggestions = [
@@ -58,6 +65,19 @@ export function AgentUI() {
             ...prevContent,
             ...parsedContent
           }));
+          
+          // Set the flag if we're using the default brain.md
+          if (data.isUsingDefaultBrain) {
+            setIsUsingDefaultBrain(true);
+          }
+          
+          // Set MCP configuration status
+          if (data.mcpStatus) {
+            setMcpStatus({
+              hasMcpPreproc: data.mcpStatus.hasMcpPreproc || false,
+              hasMcpConfig: data.mcpStatus.hasMcpConfig || false
+            });
+          }
         }
       })
       .catch(err => {
@@ -132,7 +152,7 @@ export function AgentUI() {
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold text-gray-900">Customer Experience Agent</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Agent Inspector</h1>
           {loading && <p className="text-sm text-gray-500">Loading agent configuration...</p>}
           {error && <p className="text-sm text-red-500">{error}</p>}
         </div>
@@ -140,24 +160,105 @@ export function AgentUI() {
       
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="bg-white p-8 rounded-lg shadow mb-8">
-          <h2 className="text-2xl font-semibold mb-4 text-blue-700">Your AI Conversation Partner</h2>
-          <p className="text-gray-700 mb-6 text-lg">
-            Welcome to the CxAgent demo! This AI-powered customer experience agent is designed to engage in natural, 
-            open-ended conversations on any topic you choose. Click the chat button in the bottom right corner to start a conversation.
-          </p>
-          <p className="text-gray-700 mb-8 text-lg">
-            Built on the actgent framework, this agent can be embedded in any website and configured to access knowledge bases 
-            through the Model Context Protocol (MCP).
-          </p>
+          <div className="space-y-3">
+            {/* Brain.md status */}
+            <div className="flex items-center">
+              <div className="mr-2">
+                <span className={`inline-flex items-center justify-center h-6 w-6 rounded-full ${isUsingDefaultBrain ? 'bg-amber-100' : 'bg-green-100'}`}>
+                  {isUsingDefaultBrain ? (
+                    <svg className="h-4 w-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  ) : (
+                    <svg className="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </span>
+              </div>
+              <span className="text-sm font-medium">
+                {isUsingDefaultBrain 
+                  ? "No brain.md found in current directory. Using default from module." 
+                  : "Using brain.md from current working directory."}
+              </span>
+            </div>
+            
+            {/* MCP Preprocessor status */}
+            <div className="flex items-center">
+              <div className="mr-2">
+                <span className={`inline-flex items-center justify-center h-6 w-6 rounded-full ${mcpStatus.hasMcpPreproc ? 'bg-green-100' : 'bg-gray-100'}`}>
+                  {mcpStatus.hasMcpPreproc ? (
+                    <svg className="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  )}
+                </span>
+              </div>
+              <span className="text-sm font-medium">
+                {mcpStatus.hasMcpPreproc 
+                  ? "Query Preprocessor configured (conf/preproc-mcp.json)" 
+                  : "No Query Preprocessor in use"}
+              </span>
+            </div>
+            
+            {/* MCP Config status */}
+            <div className="flex items-center">
+              <div className="mr-2">
+                <span className={`inline-flex items-center justify-center h-6 w-6 rounded-full ${mcpStatus.hasMcpConfig ? 'bg-green-100' : 'bg-gray-100'}`}>
+                  {mcpStatus.hasMcpConfig ? (
+                    <svg className="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  )}
+                </span>
+              </div>
+              <span className="text-sm font-medium">
+                {mcpStatus.hasMcpConfig 
+                  ? "MCP Configuration found (conf/mcp_config.json)" 
+                  : "No MCP Servers in use"}
+              </span>
+            </div>
+          </div>
+          
+          {isUsingDefaultBrain && (
+            <div className="bg-amber-50 border-l-4 border-amber-500 p-4 mb-6">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-amber-700 font-medium">Attention</p>
+                  <p className="text-sm text-amber-700 mt-1">
+                    You're currently using the default brain.md from the CxAgent module. To customize your agent's behavior, create a{' '}
+                    <code className="bg-amber-100 px-1 py-0.5 rounded">brain.md</code> file in your current working directory.
+                  </p>
+                  <p className="text-sm text-amber-700 mt-2">
+                    Run <code className="bg-amber-100 px-1 py-0.5 rounded">{`echo "---
+name: \"My Custom Agent\"
+---" > brain.md`}</code> to create a basic file, then customize it to your needs.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Brain.md content with nice layout */}
         <div className="bg-white p-8 rounded-lg shadow">
-          <h2 className="text-2xl font-semibold mb-6 text-blue-700">Agent Capabilities</h2>
+          <h2 className="text-2xl font-semibold mb-6 text-blue-700">Agent Profile</h2>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="bg-blue-50 p-6 rounded-lg">
-              <h3 className="font-medium text-xl text-blue-800 mb-3">Agent Profile</h3>
               <div className="space-y-2">
                 <div className="flex">
                   <span className="font-semibold w-20">Name:</span>

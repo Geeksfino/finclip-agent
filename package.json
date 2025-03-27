@@ -14,6 +14,7 @@
     "build:assets": "cp brain.md dist/ && mkdir -p dist/conf && cp -r conf/* dist/conf/ 2>/dev/null || true",
     "build:web": "cd web && bun install && bun run build",
     "build:all": "bun run build && bun run build:web",
+    "prepublishOnly": "bun run build",
     "test": "vitest run",
     "test:watch": "vitest",
     "watch:ts": "bun tsc-watch",
@@ -29,8 +30,7 @@
   "files": [
     "dist",
     "!dist/**/*.map",
-    "web/dist/finclip-chat.js",
-    "web/dist/assets/**"
+    "brain.md"
   ],
   "dependencies": {
     "@finogeek/actgent": "^1.0.4",
