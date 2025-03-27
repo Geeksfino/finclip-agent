@@ -1,6 +1,6 @@
 {
   "name": "@finogeek/cxagent",
-  "version": "1.0.4",
+  "version": "1.0.8",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -14,7 +14,7 @@
     "build:assets": "cp brain.md dist/ && mkdir -p dist/conf && cp -r conf/* dist/conf/ 2>/dev/null || true",
     "build:web": "cd web && bun install && bun run build",
     "build:all": "bun run build && bun run build:web",
-    "prepublishOnly": "bun run build",
+    "prepublishOnly": "bun run build:all",
     "test": "vitest run",
     "test:watch": "vitest",
     "watch:ts": "bun tsc-watch",
@@ -29,8 +29,10 @@
   },
   "files": [
     "dist",
-    "!dist/**/*.map",
-    "brain.md"
+    "!dist/**/*.map",  "brain.md",
+    "web/dist/finclip-chat.iife.js",
+    "web/dist/finclip-chat-embed.iife.js",
+    "web/dist/style.css"
   ],
   "dependencies": {
     "@finogeek/actgent": "^1.0.4",
