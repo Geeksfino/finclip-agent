@@ -16,6 +16,8 @@ program
     .option('--log-level <level>', 'set logging level (trace, debug, info, warn, error, fatal)', 'info')
     .option('--ui', 'start a web UI to visualize and interact with the agent')
     .option('--ui-port <port>', 'specify the port for the web UI (default: 5173)', '5173')
+    .option('--inspect', 'start the enhanced inspector UI to visualize agent configuration')
+    .option('--inspect-port <port>', 'specify the port for the inspector UI (default: 5173)', '5173')
     .allowUnknownOption(false)
     .parse(process.argv);
 
@@ -26,14 +28,38 @@ const loggerConfig: LoggingConfig = {
     destination: path.join(process.cwd(), `CxAgent.log`)
 };
 
-// Check if UI mode is enabled
-if (options.ui) {
+// Check if UI or Inspector mode is enabled
+if (options.inspect) {
+    logger.info('Starting CxAgent in Inspector mode...');
+
+    // Start the agent
+    CxAgent.run(loggerConfig);
+
+    // Import and start the new inspector UI
+    const inspectPort = options.inspectPort;
+    import('./inspector/bridge.js').then(({ startUI: startInspector }) => {
+        startInspector({
+            port: parseInt(inspectPort),
+            brainPath: path.join(process.cwd(), 'brain.md')
+        }).then(() => {
+            logger.info(`CxAgent Inspector is running at http://localhost:${inspectPort}`);
+            logger.info('Press Ctrl+C to stop');
+        }).catch((error) => {
+            logger.error('Failed to start Inspector:', error);
+            process.exit(1);
+        });
+    }).catch((error) => {
+        logger.error('Failed to import Inspector module:', error);
+        logger.error('Make sure the inspector directory is properly set up.');
+        process.exit(1);
+    });
+} else if (options.ui) {
     logger.info('Starting CxAgent in UI mode...');
 
     // Start the agent
     CxAgent.run(loggerConfig);
 
-    // Start the UI
+    // Start the legacy UI
     const uiPort = options.uiPort;
     startUI({
         port: parseInt(uiPort),

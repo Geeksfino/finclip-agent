@@ -1,0 +1,18 @@
+{
+  "name": "cxagent-inspector",
+  "version": "0.1.0",
+  "description": "Web-based inspector for CxAgent configuration",
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "start": "bun run test.ts",
+    "dev": "bun run --watch test.ts",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "bun": "^1.0.0"
+  },
+  "devDependencies": {
+    "bun-types": "latest"
+  }
+}
