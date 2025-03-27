@@ -40,8 +40,82 @@ if (hasCustomEnv) {
 const basePath = hasCustomEnv ? process.cwd() : __dirname;
 const svcConfig = await AgentServiceConfigurator.getAgentConfiguration(basePath);
 
-const CxAgent = new AgentBuilder(agentConfig, svcConfig)
-    .create(BareClassifier, BarePromptTemplate);
+// Check for MCP configuration file
+const mcpConfigPath = runtime.path.join(basePath, 'conf', 'mcp_config.json');
+const hasMcpConfig = await runtime.fs.exists(mcpConfigPath);
+let mcpConfigProcessed = false;
+
+if (hasMcpConfig) {
+  console.log(`Found MCP configuration: ${mcpConfigPath}`);
+  
+  try {
+    // Read and preprocess the MCP configuration file
+    const mcpConfigContent = await runtime.fs.readFile(mcpConfigPath, 'utf-8');
+    let mcpConfig;
+    
+    try {
+      mcpConfig = JSON.parse(mcpConfigContent);
+      
+      // Process environment variables in the configuration
+      if (mcpConfig.mcpServers) {
+        const home = process.env.HOME || '';
+        const cwd = process.cwd();
+        
+        // Process each server configuration
+        for (const serverName in mcpConfig.mcpServers) {
+          const server = mcpConfig.mcpServers[serverName];
+          
+          // Process args array
+          if (server.args && Array.isArray(server.args)) {
+            server.args = server.args.map((arg: unknown) => {
+              if (typeof arg === 'string') {
+                return arg.replace(/\$\{HOME\}/g, home)
+                         .replace(/\$\{CWD\}/g, cwd);
+              }
+              return arg;
+            });
+          }
+          
+          // Process cwd if present
+          if (server.cwd && typeof server.cwd === 'string') {
+            server.cwd = server.cwd.replace(/\$\{HOME\}/g, home)
+                               .replace(/\$\{CWD\}/g, cwd);
+          }
+        }
+      }
+      
+      // Write the processed configuration to a temporary file
+      const tempMcpConfigPath = runtime.path.join(basePath, 'conf', 'mcp_config_processed.json');
+      await runtime.fs.writeFile(tempMcpConfigPath, JSON.stringify(mcpConfig, null, 2));
+      
+      console.log(`Processed MCP configuration and saved to: ${tempMcpConfigPath}`);
+      mcpConfigProcessed = true;
+    } catch (parseError: unknown) {
+      const errorMessage = parseError instanceof Error ? parseError.message : String(parseError);
+      console.error(`Error parsing MCP configuration: ${errorMessage}`);
+    }
+  } catch (readError: unknown) {
+    const errorMessage = readError instanceof Error ? readError.message : String(readError);
+    console.error(`Error reading MCP configuration: ${errorMessage}`);
+  }
+}
+
+// Create the agent with MCP tools if configuration exists and was processed successfully
+let agentBuilder = new AgentBuilder(agentConfig, svcConfig);
+
+// Add MCP tools if configuration exists and was processed successfully
+if (hasMcpConfig && mcpConfigProcessed) {
+  try {
+    const tempMcpConfigPath = runtime.path.join(basePath, 'conf', 'mcp_config_processed.json');
+    agentBuilder = agentBuilder.withMcpTools(tempMcpConfigPath);
+  } catch (mcpError: unknown) {
+    const errorMessage = mcpError instanceof Error ? mcpError.message : String(mcpError);
+    console.error(`Error initializing MCP tools: ${errorMessage}`);
+    console.warn('Continuing without MCP tools due to initialization error');
+  }
+}
+
+const CxAgent = agentBuilder.create(BareClassifier, BarePromptTemplate);
 
 // Initialize MCP preprocessor
 (async () => {

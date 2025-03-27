@@ -12,6 +12,8 @@ interface BrainContent {
 interface McpStatus {
   hasMcpPreproc: boolean;
   hasMcpConfig: boolean;
+  hasMcpProcessedConfig: boolean;
+  hasMcpServer: boolean;
 }
 
 export function AgentUI() {
@@ -30,7 +32,12 @@ export function AgentUI() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isUsingDefaultBrain, setIsUsingDefaultBrain] = useState(false);
-  const [mcpStatus, setMcpStatus] = useState<McpStatus>({ hasMcpPreproc: false, hasMcpConfig: false });
+  const [mcpStatus, setMcpStatus] = useState<McpStatus>({ 
+    hasMcpPreproc: false, 
+    hasMcpConfig: false,
+    hasMcpProcessedConfig: false,
+    hasMcpServer: false
+  });
   
   // Custom suggestions for the chat widget
   const customSuggestions = [
@@ -66,7 +73,9 @@ export function AgentUI() {
           if (data.mcpStatus) {
             setMcpStatus({
               hasMcpPreproc: data.mcpStatus.hasMcpPreproc || false,
-              hasMcpConfig: data.mcpStatus.hasMcpConfig || false
+              hasMcpConfig: data.mcpStatus.hasMcpConfig || false,
+              hasMcpProcessedConfig: data.mcpStatus.hasMcpProcessedConfig || false,
+              hasMcpServer: data.mcpStatus.hasMcpServer || false
             });
           }
         }
@@ -185,11 +194,11 @@ export function AgentUI() {
               </span>
             </div>
             
-            {/* MCP Config status */}
+            {/* MCP Server status */}
             <div className="flex items-center">
               <div className="mr-2">
-                <span className={`inline-flex items-center justify-center h-6 w-6 rounded-full ${mcpStatus.hasMcpConfig ? 'bg-green-100' : 'bg-gray-100'}`}>
-                  {mcpStatus.hasMcpConfig ? (
+                <span className={`inline-flex items-center justify-center h-6 w-6 rounded-full ${mcpStatus.hasMcpServer ? 'bg-green-100' : 'bg-gray-100'}`}>
+                  {mcpStatus.hasMcpServer ? (
                     <svg className="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
@@ -201,9 +210,9 @@ export function AgentUI() {
                 </span>
               </div>
               <span className="text-sm font-medium">
-                {mcpStatus.hasMcpConfig 
-                  ? "MCP Configuration found (conf/mcp_config.json)" 
-                  : "No MCP Servers in use"}
+                {mcpStatus.hasMcpServer 
+                  ? "MCP Server configured" + (mcpStatus.hasMcpProcessedConfig ? " (processed)" : "") 
+                  : "No MCP Server in use"}
               </span>
             </div>
           </div>

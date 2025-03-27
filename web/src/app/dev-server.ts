@@ -64,9 +64,82 @@ capabilities: >-
 ---`;
           }
           
-          // Send the brain.md content as JSON
+          // Check for MCP configuration files in multiple possible locations
+          const possibleRoots = [
+            process.cwd(),                // web directory
+            join(process.cwd(), '..'),    // project root
+            join(process.cwd(), '../..'), // parent directory
+          ];
+          
+          let hasMcpPreproc = false;
+          let hasMcpConfig = false;
+          let hasMcpProcessedConfig = false;
+          let mcpPreprocPath = '';
+          let mcpConfigPath = '';
+          let mcpProcessedConfigPath = '';
+          
+          // Log the current working directory for debugging
+          console.log(`[Dev Server] Current working directory: ${process.cwd()}`);
+          
+          // Check each possible location for MCP configuration files
+          for (const root of possibleRoots) {
+            const confDir = join(root, 'conf');
+            console.log(`[Dev Server] Checking for conf directory at: ${confDir}`);
+            
+            if (existsSync(confDir)) {
+              console.log(`[Dev Server] Found conf directory at: ${confDir}`);
+              
+              // Check for query preprocessor configuration
+              const preprocPath = join(confDir, 'preproc-mcp.json');
+              if (existsSync(preprocPath)) {
+                mcpPreprocPath = preprocPath;
+                hasMcpPreproc = true;
+                console.log(`[Dev Server] Found MCP preprocessor config: ${preprocPath}`);
+              }
+              
+              // Check for MCP server configuration
+              const configPath = join(confDir, 'mcp_config.json');
+              if (existsSync(configPath)) {
+                mcpConfigPath = configPath;
+                hasMcpConfig = true;
+                console.log(`[Dev Server] Found MCP configuration: ${configPath}`);
+              }
+              
+              // Check for processed MCP server configuration
+              const processedConfigPath = join(confDir, 'mcp_config_processed.json');
+              if (existsSync(processedConfigPath)) {
+                mcpProcessedConfigPath = processedConfigPath;
+                hasMcpProcessedConfig = true;
+                console.log(`[Dev Server] Found processed MCP configuration: ${processedConfigPath}`);
+              }
+              
+              // If we found all three, no need to check other locations
+              if (hasMcpPreproc && hasMcpConfig && hasMcpProcessedConfig) {
+                break;
+              }
+            }
+          }
+          
+          // Summary of MCP configuration status
+          if (hasMcpConfig || hasMcpPreproc || hasMcpProcessedConfig) {
+            console.log(`[Dev Server] MCP status: Config=${hasMcpConfig}, ProcessedConfig=${hasMcpProcessedConfig}, QueryPreprocessor=${hasMcpPreproc}`);
+          } else {
+            console.log(`[Dev Server] No MCP configuration found`);
+          }
+          
+          // Send the brain.md content and MCP status as JSON
           res.setHeader('Content-Type', 'application/json');
-          res.end(JSON.stringify({ content: brainContent }));
+          res.end(JSON.stringify({
+            content: brainContent,
+            isUsingDefaultBrain: !brainContent,
+            mcpStatus: {
+              hasMcpPreproc,
+              hasMcpConfig,
+              hasMcpProcessedConfig,
+              // For UI display purposes, consider the agent to have MCP if either the config or processed config exists
+              hasMcpServer: hasMcpConfig || hasMcpProcessedConfig
+            }
+          }));
         } else {
           next();
         }
