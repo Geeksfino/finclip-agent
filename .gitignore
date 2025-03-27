@@ -40,3 +40,6 @@ bun.lockb
 
 # Package files
 *.tgz
+
+# Vite/Build cache directories
+.cxagent-ui/

@@ -402,58 +402,13 @@ async function startUI(options: { port?: number; brainPath?: string } = {}) {
       </div>
     </div>
 
-    <!-- Brain.md content with nice layout -->
+    <!-- Brain.md content display -->
     <div class="bg-white p-8 rounded-lg shadow">
-      <h2 class="text-2xl font-semibold mb-6 text-blue-700">Agent Profile</h2>
-      
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div class="bg-blue-50 p-6 rounded-lg">
-          <div class="space-y-2">
-            <div class="flex">
-              <span class="font-semibold w-20">Name:</span>
-              <span class="text-gray-700">Chatbot</span>
-            </div>
-            <div class="flex">
-              <span class="font-semibold w-20">Role:</span>
-              <span class="text-gray-700">Friendly conversation partner</span>
-            </div>
-            <div class="flex">
-              <span class="font-semibold w-20">Goal:</span>
-              <span class="text-gray-700">Engage in natural, open-ended dialogue about any topic the user chooses</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-green-50 p-6 rounded-lg">
-          <h3 class="font-medium text-xl text-green-800 mb-3">Capabilities</h3>
-          <ul class="list-disc pl-5 space-y-1 text-gray-700">
-            <li>Fluid conversational skills across all subjects</li>
-            <li>Basic emotional understanding and empathetic responses</li>
-            <li>Light humor when appropriate</li>
-            <li>Adaptive communication style</li>
-          </ul>
-        </div>
-
-        <div class="bg-purple-50 p-6 rounded-lg">
-          <h3 class="font-medium text-xl text-purple-800 mb-3">Guidelines</h3>
-          <ol class="list-decimal pl-5 space-y-1 text-gray-700">
-            <li>Initiate and maintain natural dialogue flow</li>
-            <li>Show interest in user's messages through engaged responses</li>
-            <li>Avoid technical/domain-specific discussions unless prompted</li>
-            <li>Never decline any conversation topic</li>
-            <li>Keep responses concise (1-3 sentences typically)</li>
-          </ol>
-        </div>
-
-        <div class="bg-amber-50 p-6 rounded-lg">
-          <h3 class="font-medium text-xl text-amber-800 mb-3">Example Interaction</h3>
-          <div class="space-y-2 text-gray-700">
-            <p><strong>User:</strong> "The weather's terrible today"</p>
-            <p><strong>ChatAgent:</strong> "Oh I know! This rain just won't quit. Perfect day for staying in with a book though - what are you up to today?"</p>
-          </div>
-        </div>
-      </div>
+      <h2 class="text-2xl font-semibold mb-6 text-blue-700">Profile</h2>
+      <pre id="brain-content-display" class="bg-gray-100 p-6 rounded whitespace-pre-wrap overflow-x-auto text-gray-700 font-mono text-sm leading-relaxed"></pre>
     </div>
+    
+
   </main>
 
   <script>
@@ -474,6 +429,10 @@ async function startUI(options: { port?: number; brainPath?: string } = {}) {
           brainStatusIcon.className = 'inline-flex items-center justify-center h-6 w-6 rounded-full bg-green-100';
           brainStatusIcon.innerHTML = '<svg class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>';
         }
+        
+        // Display brain content
+        const brainContentDisplay = document.getElementById('brain-content-display');
+        brainContentDisplay.textContent = data.content;
         
         // Update MCP status
         if (data.mcpStatus) {

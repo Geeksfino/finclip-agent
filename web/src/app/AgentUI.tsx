@@ -5,9 +5,8 @@ interface BrainContent {
   name: string;
   role: string;
   goal: string;
-  capabilities: string[];
-  guidelines: string[];
-  example?: string;
+  capabilities: string;
+  parsedCapabilities?: string[];
 }
 
 interface McpStatus {
@@ -20,21 +19,13 @@ export function AgentUI() {
     name: 'Chatbot',
     role: 'Friendly conversation partner',
     goal: 'Engage in natural, open-ended dialogue about any topic the user chooses',
-    capabilities: [
+    capabilities: '- Fluid conversational skills across all subjects\n- Basic emotional understanding and empathetic responses\n- Light humor when appropriate\n- Adaptive communication style\n\nguidelines:\n1. Initiate and maintain natural dialogue flow\n2. Show interest in user\'s messages through engaged responses\n3. Avoid technical/domain-specific discussions unless prompted\n4. Never decline any conversation topic\n5. Keep responses concise (1-3 sentences typically)\n6. Use casual but grammatically correct language\n\nExample interaction:\nUser: "The weather\'s terrible today"\nChatAgent: "Oh I know! This rain just won\'t quit. Perfect day for staying in with a book though - what are you up to today?"',
+    parsedCapabilities: [
       'Fluid conversational skills across all subjects',
       'Basic emotional understanding and empathetic responses',
       'Light humor when appropriate',
       'Adaptive communication style'
-    ],
-    guidelines: [
-      'Initiate and maintain natural dialogue flow',
-      'Show interest in user\'s messages through engaged responses',
-      'Avoid technical/domain-specific discussions unless prompted',
-      'Never decline any conversation topic',
-      'Keep responses concise (1-3 sentences typically)',
-      'Use casual but grammatically correct language'
-    ],
-    example: 'User: "The weather\'s terrible today"\nChatAgent: "Oh I know! This rain just won\'t quit. Perfect day for staying in with a book though - what are you up to today?"'
+    ]
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -117,28 +108,17 @@ export function AgentUI() {
           result.goal = goalMatch[1].trim();
         }
         
-        // Extract capabilities list
+        // Extract capabilities (full content including guidelines, examples, etc.)
         const capabilitiesMatch = yamlContent.match(/capabilities:\s*>-\s*([\s\S]*?)(?=\n\w|$)/);
         if (capabilitiesMatch && capabilitiesMatch[1]) {
-          result.capabilities = capabilitiesMatch[1]
+          // Store the full capabilities content
+          result.capabilities = capabilitiesMatch[1].trim();
+          
+          // Also extract just the bullet points for display
+          result.parsedCapabilities = capabilitiesMatch[1]
             .split('\n')
             .filter(line => line.trim().startsWith('-'))
             .map(line => line.trim().substring(1).trim());
-        }
-        
-        // Extract guidelines
-        const guidelinesMatch = yamlContent.match(/guidelines:\s*([\s\S]*?)(?=\n\w|$)/);
-        if (guidelinesMatch && guidelinesMatch[1]) {
-          result.guidelines = guidelinesMatch[1]
-            .split('\n')
-            .filter(line => /^\s*\d+\./.test(line))
-            .map(line => line.replace(/^\s*\d+\.\s*/, '').trim());
-        }
-        
-        // Extract example interaction
-        const exampleMatch = yamlContent.match(/Example interaction:([\s\S]*?)(?=\n---|\s*$)/);
-        if (exampleMatch && exampleMatch[1]) {
-          result.example = exampleMatch[1].trim();
         }
       }
     } catch (err) {
@@ -277,48 +257,8 @@ name: \"My Custom Agent\"
 
             <div className="bg-green-50 p-6 rounded-lg">
               <h3 className="font-medium text-xl text-green-800 mb-3">Capabilities</h3>
-              <ul className="list-disc pl-5 space-y-1 text-gray-700">
-                {brainContent.capabilities.map((capability, index) => (
-                  <li key={index}>{capability}</li>
-                ))}
-              </ul>
+              <pre className="whitespace-pre-wrap text-gray-700">{brainContent.capabilities}</pre>
             </div>
-
-            <div className="bg-purple-50 p-6 rounded-lg">
-              <h3 className="font-medium text-xl text-purple-800 mb-3">Guidelines</h3>
-              <ol className="list-decimal pl-5 space-y-1 text-gray-700">
-                {brainContent.guidelines.map((guideline, index) => (
-                  <li key={index}>{guideline}</li>
-                ))}
-              </ol>
-            </div>
-
-            {brainContent.example && (
-              <div className="bg-amber-50 p-6 rounded-lg">
-                <h3 className="font-medium text-xl text-amber-800 mb-3">Example Interaction</h3>
-                <div className="space-y-2 text-gray-700">
-                  {brainContent.example.split('\n').map((line, index) => {
-                    if (line.startsWith('User:')) {
-                      return (
-                        <div key={index} className="bg-gray-100 p-2 rounded">
-                          <span className="font-semibold">{line.split(':')[0]}:</span>
-                          {line.substring(line.indexOf(':') + 1)}
-                        </div>
-                      );
-                    } else if (line.startsWith('ChatAgent:')) {
-                      return (
-                        <div key={index} className="bg-blue-100 p-2 rounded">
-                          <span className="font-semibold">{line.split(':')[0]}:</span>
-                          {line.substring(line.indexOf(':') + 1)}
-                        </div>
-                      );
-                    } else {
-                      return <div key={index}>{line}</div>;
-                    }
-                  })}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </main>
