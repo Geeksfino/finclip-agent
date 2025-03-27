@@ -84,6 +84,28 @@ export function createServer(options: ServerOptions): Server {
         });
       }
       
+      // Download the embedding script
+      if (path === '/download/finclip-chat-embed.iife.js' && assetPaths.embedScriptPath) {
+        return new Response(Bun.file(assetPaths.embedScriptPath), {
+          headers: {
+            ...headers,
+            'Content-Type': 'application/javascript',
+            'Content-Disposition': 'attachment; filename="finclip-chat-embed.iife.js"'
+          }
+        });
+      }
+      
+      // Download the style.css file
+      if (path === '/download/style.css' && assetPaths.stylePath) {
+        return new Response(Bun.file(assetPaths.stylePath), {
+          headers: {
+            ...headers,
+            'Content-Type': 'text/css',
+            'Content-Disposition': 'attachment; filename="style.css"'
+          }
+        });
+      }
+      
       // Serve the inspector HTML for all other paths
       return new Response(inspectorHtml, { 
         headers: {

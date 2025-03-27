@@ -260,6 +260,60 @@ export function createInspectorHtml(options: TemplateOptions): string {
       </div>
     </div>
 
+    <!-- Embedding Files Download -->
+    <div class="bg-white p-8 rounded-lg shadow mb-8">
+      <button class="flex justify-between items-center w-full" id="embedding-toggle">
+        <h2 class="text-2xl font-semibold text-blue-700">Embedding Resources</h2>
+        <svg class="w-6 h-6 text-blue-700 transform transition-transform duration-300" id="embedding-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      
+      <div id="embedding-content" class="mt-6">
+        <p class="mb-4">Download these files to embed the chat widget in your website:</p>
+        
+        <div class="flex flex-col space-y-3 mb-6">
+          <a id="download-js-link" href="/download/finclip-chat-embed.iife.js" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 w-fit">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Download finclip-chat-embed.iife.js
+          </a>
+          
+          <a id="download-css-link" href="/download/style.css" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 w-fit">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Download style.css
+          </a>
+        </div>
+        
+        <div class="border-t border-gray-200 pt-4">
+          <h3 class="text-lg font-medium mb-2">Embedding Instructions</h3>
+          
+          <div class="bg-gray-100 p-4 rounded-md">
+            <p class="mb-2">Add this code to your HTML:</p>
+            <pre class="bg-gray-900 text-green-400 p-3 rounded overflow-x-auto text-sm font-mono leading-relaxed">&lt;!-- Include the CSS file --&gt;
+&lt;link rel="stylesheet" href="path/to/style.css"&gt;
+
+&lt;!-- Add the chat widget --&gt;
+&lt;script 
+  src="path/to/finclip-chat-embed.iife.js" 
+  data-finclip-chat 
+  data-api-url="http://localhost:5678" 
+  data-streaming-url="http://localhost:5679"
+  data-suggestions="How can I get started?,What features are available?,Tell me about CxAgent"
+  data-suggestions-label="Try asking me something 👋"
+  data-button-label="Let's chat"&gt;
+&lt;/script&gt;</pre>
+            <button id="copy-embed-code" class="mt-2 px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
+              Copy to Clipboard
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
     <!-- Brain.md content display -->
     <div class="bg-white p-8 rounded-lg shadow">
       <h2 class="text-2xl font-semibold mb-6 text-blue-700">Profile</h2>
@@ -268,6 +322,54 @@ export function createInspectorHtml(options: TemplateOptions): string {
   </main>
 
   <script>
+    // Accordion toggle functionality
+    document.getElementById('embedding-toggle').addEventListener('click', function() {
+      const content = document.getElementById('embedding-content');
+      const icon = document.getElementById('embedding-icon');
+      content.classList.toggle('hidden');
+      icon.classList.toggle('rotate-180');
+    });
+    
+    // Initially hide the embedding content
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('embedding-content').classList.add('hidden');
+    });
+    
+    // Copy to clipboard functionality for embedding code
+    document.getElementById('copy-embed-code').addEventListener('click', function() {
+      const code = document.querySelector('.bg-gray-100 pre').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        this.textContent = 'Copied!';
+        setTimeout(() => {
+          this.textContent = 'Copy to Clipboard';
+        }, 2000);
+      });
+    });
+    
+    // Check if embedding files are available
+    const hasEmbedScript = ${!!options.hasEmbedScript};
+    const hasStylesheet = ${!!options.hasStylesheet};
+    
+    if (!hasEmbedScript) {
+      const downloadJsLink = document.getElementById('download-js-link');
+      downloadJsLink.classList.add('opacity-50', 'cursor-not-allowed');
+      downloadJsLink.classList.remove('hover:bg-blue-700');
+      downloadJsLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        alert('Embedding script not found. Please make sure the web/dist directory is available.');
+      });
+    }
+    
+    if (!hasStylesheet) {
+      const downloadCssLink = document.getElementById('download-css-link');
+      downloadCssLink.classList.add('opacity-50', 'cursor-not-allowed');
+      downloadCssLink.classList.remove('hover:bg-blue-700');
+      downloadCssLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        alert('Style file not found. Please make sure the web/dist directory is available.');
+      });
+    }
+    
     // Fetch agent configuration status
     fetch('/api/brain')
       .then(response => response.json())
