@@ -29,7 +29,8 @@
   },
   "files": [
     "dist",
-    "!dist/**/*.map",  "brain.md",
+    "!dist/**/*.map",
+    "brain.md",
     "web/dist/finclip-chat.iife.js",
     "web/dist/finclip-chat-embed.iife.js",
     "web/dist/style.css"
