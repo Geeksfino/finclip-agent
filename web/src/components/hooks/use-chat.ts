@@ -162,15 +162,15 @@ export function useChat({
           console.log("EventSource connection opened");
           clearTimeout(timeoutId);
           timeoutId = setTimeout(() => {
-            console.error("Response timeout after 120s");
-            const timeoutError = new Error('Connection timeout after 120 seconds');
+            console.error("Response timeout after 600s");
+            const timeoutError = new Error('Connection timeout after 600 seconds');
             setError(timeoutError);
             onError?.(timeoutError);
             eventSource.close();
             setIsGenerating(false);
             setIsLoading(false);
             reject(timeoutError);
-          }, 120000); // 2 minutes timeout
+          }, 600000); // 10 minutes timeout
         };
         
         eventSource.onmessage = (event) => {
@@ -179,15 +179,15 @@ export function useChat({
             // Reset timeout on each message
             clearTimeout(timeoutId);
             timeoutId = setTimeout(() => {
-              console.error("Response timeout after 120s");
-              const timeoutError = new Error('Connection timeout after 120 seconds');
+              console.error("Response timeout after 600s");
+              const timeoutError = new Error('Connection timeout after 600 seconds');
               setError(timeoutError);
               onError?.(timeoutError);
               eventSource.close();
               setIsGenerating(false);
               setIsLoading(false);
               reject(timeoutError);
-            }, 120000);
+            }, 600000);
             
             // Skip keepalive messages
             if (!event.data || event.data.startsWith(':')) {
