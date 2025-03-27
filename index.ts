@@ -10,10 +10,14 @@ import { startUI } from './src/cli/ui';
 
 // Configure command line options
 program
+    .name('cxagent')
+    .description('Customer Experience Agent powered by actgent framework')
+    .version(process.env.npm_package_version || '1.0.6')
     .option('--log-level <level>', 'set logging level (trace, debug, info, warn, error, fatal)', 'info')
     .option('--ui', 'start a web UI to visualize and interact with the agent')
     .option('--ui-port <port>', 'specify the port for the web UI (default: 5173)', '5173')
-    .parse();
+    .allowUnknownOption(false)
+    .parse(process.argv);
 
 const options = program.opts();
 logger.setLevel(options.logLevel.toLowerCase() as LogLevel);
@@ -30,11 +34,12 @@ if (options.ui) {
     CxAgent.run(loggerConfig);
 
     // Start the UI
+    const uiPort = options.uiPort;
     startUI({
-        port: parseInt(options.uiPort),
+        port: parseInt(uiPort),
         brainPath: path.join(process.cwd(), 'brain.md')
     }).then(() => {
-        logger.info(`CxAgent UI is running at http://localhost:${options.uiPort}`);
+        logger.info(`CxAgent UI is running at http://localhost:${uiPort}`);
         logger.info('Press Ctrl+C to stop');
     }).catch((error) => {
         logger.error('Failed to start UI:', error);
