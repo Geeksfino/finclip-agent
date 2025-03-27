@@ -288,6 +288,28 @@ export function createInspectorHtml(options: TemplateOptions): string {
           </a>
         </div>
         
+        <div class="bg-amber-50 border-l-4 border-amber-400 p-4 mb-6">
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <svg class="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="ml-3">
+              <h3 class="text-sm font-medium text-amber-800">CORS Setup Required</h3>
+              <div class="mt-2 text-sm text-amber-700">
+                <p>When embedding the chat widget on a different domain, you must configure CORS on your agent server:</p>
+                <ul class="list-disc pl-5 mt-1 space-y-1">
+                  <li>Set <code class="text-xs bg-amber-100 px-1 py-0.5 rounded">Access-Control-Allow-Origin</code> to your website's origin</li>
+                  <li>Enable <code class="text-xs bg-amber-100 px-1 py-0.5 rounded">Access-Control-Allow-Credentials: true</code></li>
+                  <li>Allow methods: <code class="text-xs bg-amber-100 px-1 py-0.5 rounded">GET, POST, OPTIONS</code></li>
+                  <li>Allow headers: <code class="text-xs bg-amber-100 px-1 py-0.5 rounded">Content-Type, Authorization</code></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        
         <div class="border-t border-gray-200 pt-4">
           <h3 class="text-lg font-medium mb-2">Embedding Instructions</h3>
           
@@ -316,7 +338,7 @@ export function createInspectorHtml(options: TemplateOptions): string {
     
     <!-- Brain.md content display -->
     <div class="bg-white p-8 rounded-lg shadow">
-      <h2 class="text-2xl font-semibold mb-6 text-blue-700">Profile</h2>
+      <h2 class="text-2xl font-semibold mb-6 text-blue-700">Agent Profile</h2>
       <pre id="brain-content-display" class="bg-gray-100 p-6 rounded whitespace-pre-wrap overflow-x-auto text-gray-700 font-mono text-sm leading-relaxed"></pre>
     </div>
   </main>
