@@ -10,6 +10,6 @@ import { startUI as startInspector } from './src/index.js';
  * This function has the same signature as the original startUI function
  * in src/cli/ui.ts for easy integration
  */
-export async function startUI(options: { port?: number; brainPath?: string } = {}) {
+export async function startUI(options: { port?: number; brainPath?: string; logLevel?: string } = {}) {
   return startInspector(options);
 }

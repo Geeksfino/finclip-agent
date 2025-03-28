@@ -40,7 +40,8 @@ if (options.inspect) {
     import('./inspector/bridge.js').then(({ startUI: startInspector }) => {
         startInspector({
             port: parseInt(inspectPort),
-            brainPath: path.join(process.cwd(), 'brain.md')
+            brainPath: path.join(process.cwd(), 'brain.md'),
+            logLevel: options.logLevel.toLowerCase()
         }).then(() => {
             logger.info(`CxAgent Inspector is running at http://localhost:${inspectPort}`);
             logger.info('Press Ctrl+C to stop');

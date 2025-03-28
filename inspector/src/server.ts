@@ -7,18 +7,24 @@ import { serve, Server, Serve } from 'bun';
 import { ConfigManager } from './utils/config-manager.js';
 import { AssetManager } from './utils/asset-manager.js';
 import { createInspectorHtml } from './templates/inspector.js';
+import { logger, LogLevel } from './utils/logger.js';
 
 interface ServerOptions {
   port: number;
   config: ConfigManager;
   assets: AssetManager;
+  logLevel?: string;
 }
 
 /**
  * Create and start the HTTP server for the inspector UI
  */
 export function createServer(options: ServerOptions): Server {
-  const { port, config, assets } = options;
+  const { port, config, assets, logLevel = 'info' } = options;
+  
+  // Set the log level
+  logger.setLevel(logLevel);
+  
   const configState = config.getState();
   const assetPaths = assets.getAssets();
   

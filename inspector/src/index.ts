@@ -7,10 +7,12 @@ import { Server } from 'bun';
 import { ConfigManager } from './utils/config-manager.js';
 import { AssetManager } from './utils/asset-manager.js';
 import { createServer } from './server.js';
+import { logger } from './utils/logger.js';
 
 export interface InspectorOptions {
   port?: number;
   brainPath?: string;
+  logLevel?: string;
 }
 
 /**
@@ -22,8 +24,11 @@ export class AgentInspector {
   private assets: AssetManager;
   private port: number;
   
+  private logLevel: string;
+  
   constructor(options: InspectorOptions = {}) {
     this.port = options.port || 5173;
+    this.logLevel = options.logLevel || 'info';
     this.config = new ConfigManager(options);
     this.assets = new AssetManager();
   }
@@ -41,11 +46,12 @@ export class AgentInspector {
       this.server = createServer({
         port: this.port,
         config: this.config,
-        assets: this.assets
+        assets: this.assets,
+        logLevel: this.logLevel
       });
       
-      console.log(`CxAgent Inspector UI is running at http://localhost:${this.port}`);
-      console.log('Press Ctrl+C to stop');
+      logger.info(`CxAgent Inspector UI is running at http://localhost:${this.port}`);
+      logger.info('Press Ctrl+C to stop');
       
       return this.server;
     } catch (error) {

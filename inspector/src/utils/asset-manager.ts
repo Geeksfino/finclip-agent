@@ -5,6 +5,7 @@
 
 import { join, dirname } from 'path';
 import { existsSync, readdirSync } from 'fs';
+import { logger } from './logger.js';
 
 export interface AssetPaths {
   embedScriptPath: string;
@@ -25,24 +26,24 @@ export class AssetManager {
    */
   async locateAssets(): Promise<void> {
     // Debug: Log import.meta.url and derived paths
-    console.log(`DEBUG: import.meta.url = ${import.meta.url}`);
-    console.log(`DEBUG: dirname(import.meta.url) = ${dirname(import.meta.url)}`);
-    console.log(`DEBUG: HOME directory = ${process.env.HOME || ''}`);
+    logger.debug(`import.meta.url = ${import.meta.url}`);
+    logger.debug(`dirname(import.meta.url) = ${dirname(import.meta.url)}`);
+    logger.debug(`HOME directory = ${process.env.HOME || ''}`);
     
     // Find the embedding script
     this.assets.embedScriptPath = await this.findEmbedScript();
     if (this.assets.embedScriptPath) {
-      console.log(`Found chat embedding script at: ${this.assets.embedScriptPath}`);
+      logger.info(`Found chat embedding script at: ${this.assets.embedScriptPath}`);
     } else {
-      console.warn('Chat embedding script not found. Chat functionality will be limited.');
+      logger.warn('Chat embedding script not found. Chat functionality will be limited.');
     }
     
     // Find the stylesheet
     this.assets.stylePath = await this.findStylesheet();
     if (this.assets.stylePath) {
-      console.log(`Found style file at: ${this.assets.stylePath}`);
+      logger.info(`Found style file at: ${this.assets.stylePath}`);
     } else {
-      console.warn('Style file not found. UI appearance may be affected.');
+      logger.warn('Style file not found. UI appearance may be affected.');
     }
   }
   
@@ -69,9 +70,9 @@ export class AssetManager {
     }
     
     // Debug: Log all possible script locations
-    console.log('DEBUG: Possible script locations:');
+    logger.debug('Possible script locations:');
     possibleScriptLocations.forEach((location, index) => {
-      console.log(`DEBUG: [${index}] ${location} (exists: ${existsSync(location)})`);
+      logger.debug(`[${index}] ${location} (exists: ${existsSync(location)})`);
     });
     
     // Find the first existing script file
@@ -107,9 +108,9 @@ export class AssetManager {
     }
     
     // Debug: Log all possible style locations
-    console.log('DEBUG: Possible style locations:');
+    logger.debug('Possible style locations:');
     possibleStyleLocations.forEach((location, index) => {
-      console.log(`DEBUG: [${index}] ${location} (exists: ${existsSync(location)})`);
+      logger.debug(`[${index}] ${location} (exists: ${existsSync(location)})`);
     });
     
     // Find the first existing style file
@@ -130,7 +131,7 @@ export class AssetManager {
     
     // Try to find the bun cache directory
     const bunCacheDir = join(process.env.HOME || '', '.bun', 'install', 'cache');
-    console.log(`DEBUG: Checking if bun cache exists at: ${bunCacheDir} (exists: ${existsSync(bunCacheDir)})`);
+    logger.debug(`Checking if bun cache exists at: ${bunCacheDir} (exists: ${existsSync(bunCacheDir)})`);
     
     if (existsSync(bunCacheDir)) {
       try {
@@ -142,7 +143,7 @@ export class AssetManager {
           for (const entry of entries) {
             if (entry.startsWith('cxagent@')) {
               const packagePath = join(finogeekDir, entry);
-              console.log(`DEBUG: Found potential package at: ${packagePath}`);
+              logger.debug(`Found potential package at: ${packagePath}`);
               bunCachePackagePaths.push(packagePath);
             }
           }
