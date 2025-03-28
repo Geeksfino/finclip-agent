@@ -10,15 +10,11 @@ export interface ConfigOptions {
   brainPath?: string;
 }
 
-export interface McpStatus {
-  hasMcpPreproc: boolean;
-  hasMcpConfig: boolean;
-}
-
 export interface ConfigState {
   brainContent: string;
   isUsingDefaultBrain: boolean;
-  mcpStatus: McpStatus;
+  mcpStatus: 'enabled' | 'disabled';
+  queryProcessorStatus: 'enabled' | 'disabled';
 }
 
 /**
@@ -29,10 +25,8 @@ export class ConfigManager {
   private state: ConfigState = {
     brainContent: '',
     isUsingDefaultBrain: true,
-    mcpStatus: {
-      hasMcpPreproc: false,
-      hasMcpConfig: false
-    }
+    mcpStatus: 'disabled',
+    queryProcessorStatus: 'disabled'
   };
   
   constructor(options: ConfigOptions = {}) {
@@ -70,14 +64,20 @@ export class ConfigManager {
     const mcpPreprocPath = join(cwd, 'conf', 'preproc-mcp.json');
     const mcpConfigPath = join(cwd, 'conf', 'mcp_config.json');
     
-    this.state.mcpStatus.hasMcpPreproc = existsSync(mcpPreprocPath);
-    this.state.mcpStatus.hasMcpConfig = existsSync(mcpConfigPath);
+    const hasMcpPreproc = existsSync(mcpPreprocPath);
+    const hasMcpConfig = existsSync(mcpConfigPath);
     
-    if (this.state.mcpStatus.hasMcpPreproc) {
+    // Update MCP status
+    this.state.mcpStatus = (hasMcpPreproc || hasMcpConfig) ? 'enabled' : 'disabled';
+    
+    // Update Query Preprocessor status
+    this.state.queryProcessorStatus = hasMcpPreproc ? 'enabled' : 'disabled';
+    
+    if (hasMcpPreproc) {
       console.log(`Found MCP preprocessor config: ${mcpPreprocPath}`);
     }
     
-    if (this.state.mcpStatus.hasMcpConfig) {
+    if (hasMcpConfig) {
       console.log(`Found MCP configuration: ${mcpConfigPath}`);
     }
   }
