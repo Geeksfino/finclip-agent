@@ -32,8 +32,43 @@ const loggerConfig: LoggingConfig = {
 if (options.inspect) {
     logger.info('Starting CxAgent in Inspector mode...');
 
-    // Start the agent
-    CxAgent.run(loggerConfig);
+    // Check for required LLM configuration directly
+    const hasLlmProviderUrl = Boolean(
+        process.env.LLM_PROVIDER_URL || 
+        process.env.npm_config_llm_provider_url
+    );
+    const hasLlmModel = Boolean(
+        process.env.LLM_MODEL || 
+        process.env.npm_config_llm_model
+    );
+    
+    logger.debug(`LLM_PROVIDER_URL present: ${hasLlmProviderUrl}`);
+    logger.debug(`LLM_MODEL present: ${hasLlmModel}`);
+
+    if (!hasLlmProviderUrl || !hasLlmModel) {
+        // Missing required configuration, log warning and continue with inspector UI only
+        if (!hasLlmProviderUrl) {
+            logger.warning('Missing required LLM configuration: LLM_PROVIDER_URL is required but not set');
+        }
+        if (!hasLlmModel) {
+            logger.warning('Missing required LLM configuration: LLM_MODEL is required but not set');
+        }
+        logger.warning('Inspector UI will start, but agent functionality will be disabled.');
+    } else {
+        // Try to start the agent
+        try {
+            CxAgent.run(loggerConfig);
+            logger.info('Agent started successfully in Inspector mode.');
+        } catch (error) {
+            // If the agent fails to start, log the error and continue with inspector UI
+            if (error instanceof Error) {
+                logger.warning(`Failed to start agent in Inspector mode: ${error.message}`);
+            } else {
+                logger.warning(`Failed to start agent in Inspector mode with unknown error: ${String(error)}`);
+            }
+            logger.warning('Inspector UI will start, but agent functionality may be limited.');
+        }
+    }
 
     // Import and start the new inspector UI
     const inspectPort = options.inspectPort;

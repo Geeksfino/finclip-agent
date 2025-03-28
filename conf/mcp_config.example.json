@@ -5,16 +5,16 @@
         "args": [
           "-y",
           "@modelcontextprotocol/server-filesystem",
-          "/Users/cliang/Desktop",
-          "/Users/cliang/Downloads"
+          "/path/to/Desktop",
+          "/path/to/Downloads"
         ]
       },
       "echo-server": {
-        "command": "/Users/cliang/repos/mygithub/embedding-mcp-server/.venv/bin/python",
+        "command": "/path/to/venv/bin/python",
         "args": [
-          "/Users/cliang/repos/mygithub/embedding-mcp-server/test/echo-mcp/simple_echo.py"
+          "/path/to/embedding-mcp-server/test/echo-mcp/simple_echo.py"
         ],
-        "cwd": "/Users/cliang/repos/mygithub/embedding-mcp-server"
+        "cwd": "/path/to/embedding-mcp-server"
       }
     }
   }

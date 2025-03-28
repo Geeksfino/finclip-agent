@@ -56,8 +56,31 @@ export class ConfigManager {
       console.warn(`No brain.md found at ${brainPath}, will use default from module`);
       this.state.isUsingDefaultBrain = true;
       
-      // TODO: Load default brain.md from module if available
-      this.state.brainContent = '# Default Agent Configuration\n\nNo brain.md file found in the current directory.';
+      // Try to load default brain.md from the package directory
+      try {
+        // Try to find it relative to the current script location
+        const packagePath = import.meta.url.replace('file://', '').replace('/inspector/src/utils/config-manager.ts', '');
+        const defaultBrainPath = join(packagePath, 'brain.md');
+        
+        if (existsSync(defaultBrainPath)) {
+          this.state.brainContent = readFileSync(defaultBrainPath, 'utf-8');
+          console.log(`Using default brain.md from: ${defaultBrainPath}`);
+        } else {
+          // If not found in package path, try the module path
+          const moduleBrainPath = join(__dirname, '..', '..', '..', '..', 'brain.md');
+          if (existsSync(moduleBrainPath)) {
+            this.state.brainContent = readFileSync(moduleBrainPath, 'utf-8');
+            console.log(`Using default brain.md from: ${moduleBrainPath}`);
+          } else {
+            // If still not found, show a message about the missing brain.md
+            this.state.brainContent = '# Default CxAgent Configuration\n\nNo brain.md file was found. Please create one to customize the agent\'s behavior.';
+          }
+        }
+      } catch (e) {
+        console.error('Error loading default brain.md:', e);
+        // Fallback to a simple default content
+        this.state.brainContent = '# Default CxAgent Configuration\n\nError loading brain.md file. Please check the console for more information.';
+      }
     }
     
     // Check for MCP configuration files
