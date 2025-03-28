@@ -6,30 +6,26 @@ CxAgent is an AI-powered customer experience agent built on the actgent framewor
 
 - [Quick Start](#quick-start)
   - [Prerequisites](#prerequisites)
-  - [Setup Local Environment](#setup-local-environment)
-  - [Start the Server](#start-the-server)
+  - [Setup and Run](#setup-and-run)
   - [Embed the Chatbot in a Website](#embed-the-chatbot-in-a-website)
+- [Inspector UI](#inspector-ui)
+  - [Using the Inspector](#using-the-inspector)
+  - [Log Level Configuration](#log-level-configuration)
+- [Configuration](#configuration)
+  - [Environment Variables](#environment-variables)
+  - [Agent Brain](#agent-brain)
+  - [Configuration Files](#configuration-files)
 - [Advanced Usage](#advanced-usage)
   - [MCP Knowledge Base Integration](#mcp-knowledge-base-integration)
   - [MCP Servers](#mcp-servers)
-- [Installation For Local Development](#installation-for-local-development)
-  - [Global Installation](#global-installation)
-  - [Configuration](#configuration)
+- [Development](#development)
+  - [Installation For Local Development](#installation-for-local-development)
   - [Command Line Interface](#command-line-interface)
   - [Web Frontend Chat Widget](#web-frontend-chat-widget)
-  - [Accessing the Chat Frontend Without Development Server](#accessing-the-chat-frontend-without-development-server)
-- [Building and Publishing](#building-and-publishing)
-- [Project Structure](#project-structure)
-- [Embedding the Chat Widget](#embedding-the-chat-widget)
-  - [Configuration Options](#configuration-options)
-  - [CORS Configuration](#cors-configuration)
-- [Development Workflow](#development-workflow)
-  - [Development Testing URLs](#development-testing-urls)
-  - [Building for Production](#building-for-production)
-  - [Understanding the Embedding Scripts](#understanding-the-embedding-scripts)
-  - [CDN Deployment](#cdn-deployment)
-  - [Cross-Domain Testing](#cross-domain-testing)
-  - [Using CXAgent with `bunx`](#using-cxagent-with-bunx)
+  - [Building and Publishing](#building-and-publishing)
+  - [Project Structure](#project-structure)
+  - [Embedding the Chat Widget](#embedding-the-chat-widget)
+  - [Development Workflow](#development-workflow)
 - [License](#license)
 
 ## Quick start
@@ -97,9 +93,17 @@ capabilities: >-
 No installation required. Just run:
 
 ```bash
-bunx @finogeek/cxagent
+bunx @finogeek/cxagent --inspect 
 ```
-That's it. This should start a chatbot that does nothing but respond to user messages. You can use the CLI to chat with it.
+That's it. This should start a chatbot that does casual chats as a companion. You can point your browser to `http://localhost:5173` to inspect it and chat with it. To embed it into your own website, follow the 'Embedding Instructions' section on the page.
+
+The agent can also be run without the inspector UI by running:
+
+```bash
+bunx @finogeek/cxagent
+```  
+You can chat with it by using the console at command line.
+
 
 **Important**: When running CxAgent with `bunx`, the tool will first look for the `.agent.env` and `brain.md` files in your current working directory. If these files exist, they will be used instead of the default ones bundled with the package. This allows you to customize the agent's behavior without modifying the package itself.
 
@@ -127,30 +131,150 @@ This allows you to customize the agent's behavior without modifying the package 
 3. **Keep API keys private**: Never share your `.agent.env` file containing real API keys
 4. **Rotate compromised keys**: If you accidentally expose your API keys, rotate them immediately
 
-### Embed the chatbot in a website
+### Embed the Chatbot in a Website
 
-Create a simple HTML file (e.g., `chat.html`) in your project directory:
-   ```html
-   <!DOCTYPE html>
-   <html lang="en">
-   <head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>CxAgent Chat</title>
-   </head>
-   <body>
-     <h1>CxAgent Chat</h1>
-     
-     <script 
-       src="./node_modules/@finogeek/cxagent/web/dist/finclip-chat.js" 
-       data-finclip-chat 
-       data-api-url="http://localhost:5678" 
-       data-streaming-url="http://localhost:5679"
-     ></script>
-   </body>
-   </html>
-   ```
-Open the HTML file in a browser to see the chatbot in action.
+1. **Install the package locally**:
+
+```bash
+bun add @finogeek/cxagent
+```
+
+2. **Create a simple HTML file** (e.g., `chat.html`):
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CxAgent Chat</title>
+</head>
+<body>
+  <h1>CxAgent Chat</h1>
+  
+  <script 
+    src="./node_modules/@finogeek/cxagent/web/dist/finclip-chat-embed.iife.js" 
+    data-finclip-chat 
+    data-api-url="http://localhost:5678" 
+    data-streaming-url="http://localhost:5679"
+    data-suggestions="How can you help me today?,What topics can we discuss?"
+    data-suggestions-label="Try asking me something 👋"
+    data-button-label="Let's chat">
+  </script>
+</body>
+</html>
+```
+
+3. **Start the agent server** in a terminal:
+
+```bash
+bunx @finogeek/cxagent
+```
+
+4. **Open the HTML file** in a browser to see the chatbot in action.
+
+## Inspector UI
+
+CxAgent includes a powerful Inspector UI that helps you visualize and manage your agent's configuration.
+
+### Using the Inspector
+
+Start the Inspector UI with the following command:
+
+```bash
+bunx @finogeek/cxagent --inspect
+```
+
+By default, the Inspector UI runs on port 5173. You can specify a different port:
+
+```bash
+bunx @finogeek/cxagent --inspect --inspect-port 3000
+```
+
+The Inspector UI provides:
+
+- Visual representation of your agent's configuration
+- Status indicators for brain.md, .agent.env, and other components
+- Sample configuration files for missing components
+- A floating chat widget to interact with your agent
+
+### Log Level Configuration
+
+You can control the verbosity of the Inspector's console output by setting the log level:
+
+```bash
+bunx @finogeek/cxagent --inspect --log-level info
+```
+
+Available log levels (from most to least verbose):
+
+- `debug` - Show all debug messages, useful for troubleshooting
+- `info` - Show informational messages (default)
+- `warn` - Show only warnings and errors
+- `error` - Show only errors
+- `none` - Suppress all output
+
+## Configuration
+
+### Environment Variables
+
+Create a `.agent.env` file in your project directory with the following options:
+
+```bash
+# LLM Configuration - REQUIRED
+LLM_API_KEY=your_api_key_here
+LLM_PROVIDER_URL=https://your-openai-compatible-provider-url
+LLM_MODEL=your-model-name
+LLM_STREAM_MODE=true or false
+
+# Agent Server Configuration - change ports if necessary
+AGENT_HOST=localhost
+AGENT_HTTP_PORT=5678
+AGENT_STREAM_PORT=5679
+AGENT_ENABLE_STREAMING=true
+```
+
+### Agent Brain
+
+The `brain.md` file defines your agent's personality, capabilities, and behavior. It uses a YAML frontmatter format:
+
+```markdown
+---
+name: "Chatbot"
+role: >-
+  Friendly conversation partner
+goal: >-
+  Engage in natural, open-ended dialogue about any topic the user chooses
+
+capabilities: >-
+  - Fluid conversational skills across all subjects
+  - Basic emotional understanding and empathetic responses
+  - Light humor when appropriate
+  - Adaptive communication style
+
+  guidelines:
+  1. Initiate and maintain natural dialogue flow
+  2. Show interest in user's messages through engaged responses
+  3. Avoid technical/domain-specific discussions unless prompted
+  4. Never decline any conversation topic
+  5. Keep responses concise (1-3 sentences typically)
+  6. Use casual but grammatically correct language
+---
+```
+
+For more advanced brain configurations, see the [actgent documentation](https://github.com/Geeksfino/actgent).
+
+### Configuration Files
+
+CxAgent looks for configuration files in the following order:
+
+1. User-supplied files in the current working directory
+2. Default files bundled with the package
+
+Required configuration files:
+- `.agent.env` - Environment variables for API keys and settings
+- `brain.md` - Agent instructions and capabilities (optional, will use default if not present)
+- `conf/` directory - Configuration files for various components (optional)
 
 ## Advanced Usage
 
