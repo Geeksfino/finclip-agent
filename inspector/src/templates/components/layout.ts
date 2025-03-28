@@ -540,5 +540,19 @@ function createScripts(options: LayoutOptions): string {
         });
       }
     };
-  </script>`;
+  </script>
+  
+  ${options.hasEmbedScript ? `
+  <!-- Embed the chat widget directly -->
+  <script 
+    src="/finclip-chat-embed.iife.js" 
+    data-finclip-chat 
+    data-api-url="http://localhost:5678" 
+    data-streaming-url="http://localhost:5679"
+    data-suggestions="How can you help me today?,What topics can we discuss?,Tell me a joke,What's the weather like?"
+    data-suggestions-label="Try asking me something 👋"
+    data-button-label="Let's chat">
+  </script>
+  ` : ''}`;
+
 }
