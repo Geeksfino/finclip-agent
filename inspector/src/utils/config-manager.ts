@@ -90,8 +90,8 @@ export class ConfigManager {
     const hasMcpPreproc = existsSync(mcpPreprocPath);
     const hasMcpConfig = existsSync(mcpConfigPath);
     
-    // Update MCP status
-    this.state.mcpStatus = (hasMcpPreproc || hasMcpConfig) ? 'enabled' : 'disabled';
+    // Update MCP status - only mcp_config.json indicates MCP servers are in use
+    this.state.mcpStatus = hasMcpConfig ? 'enabled' : 'disabled';
     
     // Update Query Preprocessor status
     this.state.queryProcessorStatus = hasMcpPreproc ? 'enabled' : 'disabled';
