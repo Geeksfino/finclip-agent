@@ -147,11 +147,6 @@ export function createEnvStatus(options: StatusOptions): string {
           <p class="text-sm text-red-700">
             No .agent.env file found. The agent will not function properly without it.
           </p>
-          <div class="mt-2">
-            <button id="show-env-example" class="text-sm font-medium text-red-700 hover:text-red-600">
-              Show Example Configuration
-            </button>
-          </div>
         </div>
       </div>
     </div>

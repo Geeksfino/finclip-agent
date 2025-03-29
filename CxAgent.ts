@@ -33,7 +33,7 @@ const hasCustomEnv = await runtime.fs.exists(cwdEnvPath);
 if (hasCustomEnv) {
   console.log(`Using .agent.env from current directory: ${cwdEnvPath}`);
 } else {
-  console.log(`No .agent.env found in current directory, using default configuration`);
+  console.log(`No .agent.env found in current directory. Agent will not work without proper LLM configurations`);
 }
 
 // Pass the current working directory as the base path if a custom .agent.env exists there

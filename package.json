@@ -1,6 +1,6 @@
 {
   "name": "@finogeek/cxagent",
-  "version": "1.1.7",
+  "version": "1.1.12",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -13,14 +13,16 @@
     "build": "bun tsc && bun run build:assets && chmod +x dist/index.js",
     "build:assets": "cp brain.md dist/ && mkdir -p dist/conf && cp -r conf/* dist/conf/ 2>/dev/null || true",
     "build:web": "cd web && bun install && bun run build",
-    "build:all": "bun run build && bun run build:web",
+    "build:inspector": "cd inspector && bun tsc",
+    "build:all": "bun run build && bun run build:web && bun run build:inspector",
     "prepublishOnly": "bun run build:all",
     "test": "vitest run",
     "test:watch": "vitest",
     "watch:ts": "bun tsc-watch",
     "watch": "bun concurrently \"bun run watch:ts\"",
     "clean": "rm -rf dist",
-    "clean:all": "bun run clean && rm -rf web/dist web/dist-production web/node_modules",
+    "clean:inspector": "rm -rf inspector/dist",
+    "clean:all": "bun run clean && bun run clean:inspector && rm -rf web/dist web/dist-production web/node_modules",
     "rebuild": "bun run clean && bun run build",
     "rebuild:all": "bun run clean:all && bun run build:all"
   },
@@ -36,7 +38,7 @@
     "web/dist/style.css"
   ],
   "dependencies": {
-    "@finogeek/actgent": "^1.0.4",
+    "@finogeek/actgent": "^1.0.5",
     "commander": "^12.1.0",
     "dotenv": "^16.4.7", 
     "uuid": "^9.0.1",

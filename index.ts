@@ -1,6 +1,5 @@
 #!/usr/bin/env bun
 
-import { CxAgent } from './CxAgent';
 import readline from 'readline';
 import { LoggingConfig } from "@finogeek/actgent/core";
 import { Logger, logger, LogLevel } from '@finogeek/actgent/core'
@@ -45,6 +44,7 @@ if (options.inspect) {
     logger.debug(`LLM_PROVIDER_URL present: ${hasLlmProviderUrl}`);
     logger.debug(`LLM_MODEL present: ${hasLlmModel}`);
 
+    // In inspector mode with missing LLM configuration, skip agent initialization entirely
     if (!hasLlmProviderUrl || !hasLlmModel) {
         // Missing required configuration, log warning and continue with inspector UI only
         if (!hasLlmProviderUrl) {
@@ -54,9 +54,14 @@ if (options.inspect) {
             logger.warning('Missing required LLM configuration: LLM_MODEL is required but not set');
         }
         logger.warning('Inspector UI will start, but agent functionality will be disabled.');
+        
+        // IMPORTANT: Do not call CxAgent.run() at all when missing required config
+        // This prevents the AgentServiceConfigurator validation from throwing errors
     } else {
-        // Try to start the agent
+        // Only try to start the agent if we have all required configuration
         try {
+            // Import CxAgent only when we have the required configuration
+            const { CxAgent } = await import('./CxAgent');
             CxAgent.run(loggerConfig);
             logger.info('Agent started successfully in Inspector mode.');
         } catch (error) {
@@ -92,6 +97,9 @@ if (options.inspect) {
 } else if (options.ui) {
     logger.info('Starting CxAgent in UI mode...');
 
+    // Import CxAgent
+    const { CxAgent } = await import('./CxAgent');
+
     // Start the agent
     CxAgent.run(loggerConfig);
 
@@ -108,6 +116,9 @@ if (options.inspect) {
         process.exit(1);
     });
 } else {
+    // Import CxAgent
+    const { CxAgent } = await import('./CxAgent');
+
     // Create readline interface for CLI mode
     const rl = readline.createInterface({
         input: process.stdin,

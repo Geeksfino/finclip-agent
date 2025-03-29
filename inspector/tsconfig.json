@@ -13,7 +13,6 @@
     "resolveJsonModule": true,
     "allowJs": true,
     "checkJs": false,
-    "noEmit": true,
     "types": ["bun-types"]
   },
   "include": ["src/**/*", "test.ts"],
