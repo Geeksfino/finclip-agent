@@ -31,36 +31,16 @@ const loggerConfig: LoggingConfig = {
 if (options.inspect) {
     logger.info('Starting CxAgent in Inspector mode...');
 
-    // Check for required LLM configuration directly
-    const hasLlmProviderUrl = Boolean(
-        process.env.LLM_PROVIDER_URL || 
-        process.env.npm_config_llm_provider_url
-    );
-    const hasLlmModel = Boolean(
-        process.env.LLM_MODEL || 
-        process.env.npm_config_llm_model
-    );
+    // Check if .agent.env exists in the current working directory
+    const cwdEnvPath = path.join(process.cwd(), '.agent.env');
+    const hasAgentEnv = await import('fs').then(fs => fs.existsSync(cwdEnvPath));
     
-    logger.debug(`LLM_PROVIDER_URL present: ${hasLlmProviderUrl}`);
-    logger.debug(`LLM_MODEL present: ${hasLlmModel}`);
+    logger.debug(`.agent.env exists: ${hasAgentEnv}`);
 
-    // In inspector mode with missing LLM configuration, skip agent initialization entirely
-    if (!hasLlmProviderUrl || !hasLlmModel) {
-        // Missing required configuration, log warning and continue with inspector UI only
-        if (!hasLlmProviderUrl) {
-            logger.warning('Missing required LLM configuration: LLM_PROVIDER_URL is required but not set');
-        }
-        if (!hasLlmModel) {
-            logger.warning('Missing required LLM configuration: LLM_MODEL is required but not set');
-        }
-        logger.warning('Inspector UI will start, but agent functionality will be disabled.');
-        
-        // IMPORTANT: Do not call CxAgent.run() at all when missing required config
-        // This prevents the AgentServiceConfigurator validation from throwing errors
-    } else {
-        // Only try to start the agent if we have all required configuration
+    // Start the agent if .agent.env exists
+    if (hasAgentEnv) {
         try {
-            // Import CxAgent only when we have the required configuration
+            // Import CxAgent only when we have .agent.env
             const { CxAgent } = await import('./CxAgent');
             CxAgent.run(loggerConfig);
             logger.info('Agent started successfully in Inspector mode.');
@@ -73,6 +53,8 @@ if (options.inspect) {
             }
             logger.warning('Inspector UI will start, but agent functionality may be limited.');
         }
+    } else {
+        logger.warning('No .agent.env file found. Inspector UI will start, but agent functionality will be disabled.');
     }
 
     // Import and start the new inspector UI

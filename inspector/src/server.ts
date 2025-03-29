@@ -4,10 +4,50 @@
  */
 
 import { serve, Server, Serve } from 'bun';
+import { join } from 'path';
 import { ConfigManager } from './utils/config-manager.js';
 import { AssetManager } from './utils/asset-manager.js';
 import { createInspectorHtml } from './templates/inspector.js';
 import { logger, LogLevel } from './utils/logger.js';
+// We'll use the local logger, not the actgent one
+
+/**
+ * Utility function to find sample files in various locations
+ * @param fileName The name of the file to find
+ * @param logger The logger instance
+ * @returns An object containing the file and whether it exists
+ */
+async function findSampleFile(fileName: string, logger: any): Promise<{ file: any, exists: boolean }> {
+  // Try these locations in order:
+  const possiblePaths = [
+    // 1. Current working directory conf
+    join(process.cwd(), 'conf', fileName),
+    // 2. Current working directory dist/conf
+    join(process.cwd(), 'dist/conf', fileName),
+    // 3. Package directory relative to script
+    join(import.meta.url.replace('file://', '').replace('/inspector/src/server.ts', ''), 'conf', fileName),
+    // 4. Package dist directory relative to script
+    join(import.meta.url.replace('file://', '').replace('/inspector/src/server.ts', ''), 'dist/conf', fileName),
+    // 5. Node modules package
+    join(process.cwd(), 'node_modules/@finogeek/cxagent/dist/conf', fileName),
+    // 6. Bun cache (for global installs)
+    join(process.env.HOME || '', '.bun/install/cache/@finogeek/cxagent@' + (process.env.npm_package_version || '') + '@@@1/dist/conf', fileName)
+  ];
+  
+  // Try each path in order
+  for (const possiblePath of possiblePaths) {
+    logger.debug(`Looking for ${fileName} at: ${possiblePath}`);
+    const file = Bun.file(possiblePath);
+    if (await file.exists()) {
+      logger.debug(`Found ${fileName} at: ${possiblePath}`);
+      return { file, exists: true };
+    }
+  }
+  
+  // Return the last attempted file (which doesn't exist)
+  logger.debug(`${fileName} not found in any location, will use default content`);
+  return { file: Bun.file(possiblePaths[0]), exists: false };
+}
 
 interface ServerOptions {
   port: number;
@@ -77,61 +117,39 @@ export function createServer(options: ServerOptions): Server {
       
       // Serve sample brain.md file
       if (path === '/api/samples/brain') {
-        // Try to load from the repository's conf directory first
-        let sampleBrainFile = Bun.file(process.cwd() + '/conf/brain.md');
-        
-        // If not found in the local repo, try to find it in the package directory
-        if (!(await sampleBrainFile.exists())) {
-          // Try to find it relative to the current script location
-          const packagePath = import.meta.url.replace('file://', '').replace('/inspector/src/server.ts', '');
-          const packageConfPath = packagePath + '/conf/brain.md';
-          
-          logger.debug(`Looking for brain.md at: ${packageConfPath}`);
-          sampleBrainFile = Bun.file(packageConfPath);
-          
-          // If still not found, try node_modules
-          if (!(await sampleBrainFile.exists())) {
-            try {
-              const modulePath = await import.meta.resolve('@finogeek/cxagent/conf/brain.md');
-              sampleBrainFile = Bun.file(modulePath);
-            } catch (error) {
-              logger.debug(`Error resolving brain.md from module: ${error}`);
-              // Fallback to looking in node_modules directly
-              sampleBrainFile = Bun.file(process.cwd() + '/node_modules/@finogeek/cxagent/conf/brain.md');
-            }
-          }
-        }
+        const { file: sampleBrainFile, exists: brainFileExists } = await findSampleFile('brain.md', logger);
         
         // Default brain.md content if sample file isn't found
-        const defaultBrainContent = `# CxAgent Brain
+        const defaultBrainContent = `
+---
+name: "Chatbot"
+role: >-
+  Friendly conversation partner
+goal: >-
+  Engage in natural, open-ended dialogue about any topic the user chooses
 
-## Instructions
+capabilities: >-
+  - Fluid conversational skills across all subjects
+  - Basic emotional understanding and empathetic responses
+  - Light humor when appropriate
+  - Adaptive communication style
 
-You are CxAgent, a helpful AI assistant. Your goal is to assist users with their tasks and questions.
+  guidelines:
+  1. Initiate and maintain natural dialogue flow
+  2. Show interest in user's messages through engaged responses
+  3. Avoid technical/domain-specific discussions unless prompted
+  4. Never decline any conversation topic
+  5. Keep responses concise (1-3 sentences typically)
+  6. Use casual but grammatically correct language
 
-## Capabilities
-
-- Answer questions about a wide range of topics
-- Provide helpful and accurate information
-- Maintain a friendly and professional tone
-- Admit when you don't know something
-
-## Limitations
-
-- You cannot access the internet directly
-- You cannot run code or execute commands
-- You cannot access files on the user's computer
-- Your knowledge has a cutoff date
-
-## Preferences
-
-- Be concise but thorough
-- Use simple language when possible
-- Provide examples when helpful
-- Format responses in a readable way`;
+  Example interaction:
+  User: "The weather's terrible today"
+  ChatAgent: "Oh I know! This rain just won't quit. Perfect day for staying in with a book though - what are you up to today?"
+---
+`;
 
         // Check if the file exists
-        if (await sampleBrainFile.exists()) {
+        if (brainFileExists) {
           const sampleBrainContent = await sampleBrainFile.text();
           return new Response(
             sampleBrainContent,
@@ -159,46 +177,32 @@ You are CxAgent, a helpful AI assistant. Your goal is to assist users with their
       
       // Serve sample .agent.env file
       if (path === '/api/samples/env') {
-        // Try to load from the repository's conf directory first
-        let sampleEnvFile = Bun.file(process.cwd() + '/conf/agent.env.example');
-        
-        // If not found in the local repo, try to find it in the package directory
-        if (!(await sampleEnvFile.exists())) {
-          // Try to find it relative to the current script location
-          const packagePath = import.meta.url.replace('file://', '').replace('/inspector/src/server.ts', '');
-          const packageConfPath = packagePath + '/conf/agent.env.example';
-          
-          logger.debug(`Looking for agent.env.example at: ${packageConfPath}`);
-          sampleEnvFile = Bun.file(packageConfPath);
-          
-          // If still not found, try node_modules
-          if (!(await sampleEnvFile.exists())) {
-            try {
-              const modulePath = await import.meta.resolve('@finogeek/cxagent/conf/agent.env.example');
-              sampleEnvFile = Bun.file(modulePath);
-            } catch (error) {
-              logger.debug(`Error resolving agent.env.example from module: ${error}`);
-              // Fallback to looking in node_modules directly
-              sampleEnvFile = Bun.file(process.cwd() + '/node_modules/@finogeek/cxagent/conf/agent.env.example');
-            }
-          }
-        }
+        const { file: sampleEnvFile, exists: envFileExists } = await findSampleFile('agent.env.example', logger);
         
         // Default .agent.env content if sample file isn't found
         const defaultEnvContent = `# LLM Configuration
-LLM_PROVIDER_URL=https://api.openai.com/v1
-LLM_MODEL=gpt-4o
 LLM_API_KEY=your_api_key_here
+LLM_PROVIDER_URL=https://api.openai.com/v1
+LLM_MODEL=gpt-4
 LLM_STREAM_MODE=true
 
-# Agent Communication Configuration
+# Agent Server Configuration
 AGENT_HOST=localhost
 AGENT_HTTP_PORT=5678
 AGENT_STREAM_PORT=5679
-AGENT_ENABLE_STREAMING=true`;
+AGENT_ENABLE_STREAMING=true
 
+# Database Configuration
+DB_PROVIDER=postgres
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=myapp
+DB_USER=postgres
+DB_PASSWORD=your_password_here
+DB_SSL=false`;
+        
         // Check if the file exists
-        if (await sampleEnvFile.exists()) {
+        if (envFileExists) {
           const sampleEnvContent = await sampleEnvFile.text();
           return new Response(
             sampleEnvContent,
@@ -226,45 +230,25 @@ AGENT_ENABLE_STREAMING=true`;
       
       // Serve sample Query Preprocessor config file
       if (path === '/api/samples/preproc') {
-        // Try to load from the repository's conf directory first
-        let samplePreprocFile = Bun.file(process.cwd() + '/conf/preproc-mcp.example.json');
-        
-        // If not found in the local repo, try to find it in the package directory
-        if (!(await samplePreprocFile.exists())) {
-          // Try to find it relative to the current script location
-          const packagePath = import.meta.url.replace('file://', '').replace('/inspector/src/server.ts', '');
-          const packageConfPath = packagePath + '/conf/preproc-mcp.example.json';
-          
-          logger.debug(`Looking for preproc-mcp.example.json at: ${packageConfPath}`);
-          samplePreprocFile = Bun.file(packageConfPath);
-          
-          // If still not found, try node_modules
-          if (!(await samplePreprocFile.exists())) {
-            try {
-              const modulePath = await import.meta.resolve('@finogeek/cxagent/conf/preproc-mcp.example.json');
-              samplePreprocFile = Bun.file(modulePath);
-            } catch (error) {
-              logger.debug(`Error resolving preproc-mcp.example.json from module: ${error}`);
-              // Fallback to looking in node_modules directly
-              samplePreprocFile = Bun.file(process.cwd() + '/node_modules/@finogeek/cxagent/conf/preproc-mcp.example.json');
-            }
-          }
-        }
+        const { file: samplePreprocFile, exists: preprocFileExists } = await findSampleFile('preproc-mcp.example.json', logger);
         
         // Default Query Preprocessor config content if sample file isn't found
         const defaultPreprocContent = `{
-  "enabled": true,
-  "preprocessor": "retrieve_context",
-  "config": {
-    "url": "http://localhost:8000",
-    "maxResults": 5,
-    "minScore": 0.7,
-    "includeMetadata": true
+  "mcpServers": {
+    "some-rag-server": {
+      "command": "/path/to/kb-mcp-server",
+      "args": [
+        "/path/to/some-knowledgebase/some-data",
+        "--some-param",
+        "some-value"
+      ],
+      "cwd": "/path/to/working/directory"
+    }
   }
 }`;
-
+        
         // Check if the file exists
-        if (await samplePreprocFile.exists()) {
+        if (preprocFileExists) {
           const samplePreprocContent = await samplePreprocFile.text();
           return new Response(
             samplePreprocContent,
@@ -292,52 +276,32 @@ AGENT_ENABLE_STREAMING=true`;
       
       // Serve sample MCP config file
       if (path === '/api/samples/mcp') {
-        // Try to load from the repository's conf directory first
-        let sampleMcpFile = Bun.file(process.cwd() + '/conf/mcp_config.example.json');
-        
-        // If not found in the local repo, try to find it in the package directory
-        if (!(await sampleMcpFile.exists())) {
-          // Try to find it relative to the current script location
-          const packagePath = import.meta.url.replace('file://', '').replace('/inspector/src/server.ts', '');
-          const packageConfPath = packagePath + '/conf/mcp_config.example.json';
-          
-          logger.debug(`Looking for mcp_config.example.json at: ${packageConfPath}`);
-          sampleMcpFile = Bun.file(packageConfPath);
-          
-          // If still not found, try node_modules
-          if (!(await sampleMcpFile.exists())) {
-            try {
-              const modulePath = await import.meta.resolve('@finogeek/cxagent/conf/mcp_config.example.json');
-              sampleMcpFile = Bun.file(modulePath);
-            } catch (error) {
-              logger.debug(`Error resolving mcp_config.example.json from module: ${error}`);
-              // Fallback to looking in node_modules directly
-              sampleMcpFile = Bun.file(process.cwd() + '/node_modules/@finogeek/cxagent/conf/mcp_config.example.json');
-            }
-          }
-        }
+        const { file: sampleMcpFile, exists: mcpFileExists } = await findSampleFile('mcp_config.example.json', logger);
         
         // Default MCP config content if sample file isn't found
         const defaultMcpContent = `{
-  "enabled": true,
-  "servers": [
-    {
-      "name": "RAG Server",
-      "url": "http://localhost:8000",
-      "type": "rag",
-      "description": "Retrieval Augmented Generation server for knowledge base access"
-    },
-    {
-      "name": "Tool Server",
-      "url": "http://localhost:8001",
-      "type": "tools",
-      "description": "Server providing additional tools and capabilities"
+    "mcpServers": {
+      "filesystem": {
+        "command": "npx",
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-filesystem",
+          "/path/to/Desktop",
+          "/path/to/Downloads"
+        ]
+      },
+      "echo-server": {
+        "command": "/path/to/venv/bin/python",
+        "args": [
+          "/path/to/embedding-mcp-server/test/echo-mcp/simple_echo.py"
+        ],
+        "cwd": "/path/to/embedding-mcp-server"
+      }
     }
-  ]
-}`;
-
+  }`;
+        
         // Check if the file exists
-        if (await sampleMcpFile.exists()) {
+        if (mcpFileExists) {
           const sampleMcpContent = await sampleMcpFile.text();
           return new Response(
             sampleMcpContent,
