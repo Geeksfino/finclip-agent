@@ -5,6 +5,15 @@
   <a href="README.zh-CN.md">简体中文</a>
 </p>
 
+<p align="center">
+  <a href="https://www.npmjs.com/package/@finogeek/cxagent"><img src="https://img.shields.io/npm/v/@finogeek/cxagent.svg" alt="npm 版本"></a>
+  <a href="https://www.npmjs.com/package/@finogeek/cxagent"><img src="https://img.shields.io/npm/dm/@finogeek/cxagent.svg" alt="npm 下载量"></a>
+  <a href="https://github.com/Geeksfino/finclip-agent/stargazers"><img src="https://img.shields.io/github/stars/Geeksfino/finclip-agent.svg" alt="GitHub stars"></a>
+  <a href="https://github.com/Geeksfino/finclip-agent/blob/main/LICENSE"><img src="https://img.shields.io/github/license/Geeksfino/finclip-agent.svg" alt="许可证"></a>
+  <a href="https://github.com/Geeksfino/finclip-agent/issues"><img src="https://img.shields.io/github/issues/Geeksfino/finclip-agent.svg" alt="GitHub issues"></a>
+  <a href="https://bun.sh"><img src="https://img.shields.io/badge/powered%20by-Bun-orange.svg" alt="由 Bun 提供支持"></a>
+</p>
+
 FinClip-Agent 是一个基于 actgent 框架构建的 AI 客户体验代理。它通过命令行和网页界面提供自然语言交互的自动化客户支持。**只需一行代码，您就可以将聊天小部件嵌入到任何网站中** - 这使得向您的网络应用程序添加 AI 支持变得极其简单。该代理可以使用 MCP（Model Context Protocol）服务器访问知识库和其他服务，基于您的自定义数据提供智能回应。
 
 > **希望更好地控制客户支持内容？** 请查看 [finclip-agent-starterkit](https://github.com/Geeksfino/finclip-agent-starterkit) - 这是一个现成的解决方案，可以将自定义知识库与您的代理集成。这有助于通过将响应基于您自己的文档和数据，来提高问答质量并防止幻觉。

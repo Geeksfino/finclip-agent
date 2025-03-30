@@ -5,6 +5,15 @@
   <a href="README.zh-CN.md">简体中文</a>
 </p>
 
+<p align="center">
+  <a href="https://www.npmjs.com/package/@finogeek/cxagent"><img src="https://img.shields.io/npm/v/@finogeek/cxagent.svg" alt="npm version"></a>
+  <a href="https://www.npmjs.com/package/@finogeek/cxagent"><img src="https://img.shields.io/npm/dm/@finogeek/cxagent.svg" alt="npm downloads"></a>
+  <a href="https://github.com/Geeksfino/finclip-agent/stargazers"><img src="https://img.shields.io/github/stars/Geeksfino/finclip-agent.svg" alt="GitHub stars"></a>
+  <a href="https://github.com/Geeksfino/finclip-agent/blob/main/LICENSE"><img src="https://img.shields.io/github/license/Geeksfino/finclip-agent.svg" alt="license"></a>
+  <a href="https://github.com/Geeksfino/finclip-agent/issues"><img src="https://img.shields.io/github/issues/Geeksfino/finclip-agent.svg" alt="GitHub issues"></a>
+  <a href="https://bun.sh"><img src="https://img.shields.io/badge/powered%20by-Bun-orange.svg" alt="Powered by Bun"></a>
+</p>
+
 FinClip-Agent is an AI-powered customer experience agent built on the actgent framework. It provides automated customer support through natural language interaction via both CLI and web interfaces. **With just a single line of code, you can embed the chat widget into any website** - making it incredibly easy to add AI-powered support to your web applications. The agent can use MCP (Model Context Protocol) server to access knowledge base and other services, providing intelligent responses based on your custom data.
 
 > **Looking for better control over customer support content?** Check out [finclip-agent-starterkit](https://github.com/Geeksfino/finclip-agent-starterkit) - a ready-to-use solution for integrating custom knowledge bases with your agent. This helps improve Q&A quality and prevents hallucinations by grounding responses in your own documentation and data.
@@ -283,7 +292,7 @@ CxAgent looks for configuration files in the following order:
 Required configuration files:
 - `.agent.env` - Environment variables for API keys and settings
 - `brain.md` - Agent instructions and capabilities (optional, will use default if not present)
-- `conf/` directory - Configuration files for various components (optional)
+- `conf/` directory - Configuration files for various components
 
 ## Advanced Usage
 
