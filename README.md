@@ -1,5 +1,10 @@
 # FinClip-Agent
 
+<p align="right">
+  <a href="README.md">English</a> |
+  <a href="README.zh-CN.md">简体中文</a>
+</p>
+
 FinClip-Agent is an AI-powered customer experience agent built on the actgent framework. It provides automated customer support through natural language interaction via both CLI and web interfaces. **With just a single line of code, you can embed the chat widget into any website** - making it incredibly easy to add AI-powered support to your web applications. The agent can use MCP (Model Context Protocol) server to access knowledge base and other services, providing intelligent responses based on your custom data.
 
 > **Looking for better control over customer support content?** Check out [finclip-agent-starterkit](https://github.com/Geeksfino/finclip-agent-starterkit) - a ready-to-use solution for integrating custom knowledge bases with your agent. This helps improve Q&A quality and prevents hallucinations by grounding responses in your own documentation and data.

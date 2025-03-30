@@ -1,6 +1,9 @@
 # FinClip-Agent
 
-[English Documentation](./README.md)
+<p align="right">
+  <a href="README.md">English</a> |
+  <a href="README.zh-CN.md">简体中文</a>
+</p>
 
 FinClip-Agent 是一个基于 actgent 框架构建的 AI 客户体验代理。它通过命令行和网页界面提供自然语言交互的自动化客户支持。**只需一行代码，您就可以将聊天小部件嵌入到任何网站中** - 这使得向您的网络应用程序添加 AI 支持变得极其简单。该代理可以使用 MCP（Model Context Protocol）服务器访问知识库和其他服务，基于您的自定义数据提供智能回应。
 
