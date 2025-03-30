@@ -120,18 +120,29 @@ const CxAgent = agentBuilder.create(BareClassifier, BarePromptTemplate);
 // Initialize MCP preprocessor
 (async () => {
   try {
+    // Check if preproc-mcp.json exists in the current working directory
+    const cwdPreprocPath = runtime.path.join(process.cwd(), 'conf', 'preproc-mcp.json');
+    const defaultPreprocPath = runtime.path.join(__dirname, 'conf', 'preproc-mcp.json');
+    
+    // Determine which preproc-mcp.json file to use
+    let preprocPath = defaultPreprocPath;
+    const hasCwdPreproc = await runtime.fs.exists(cwdPreprocPath);
+    
+    if (hasCwdPreproc) {
+      console.log(`Using preproc-mcp.json from current directory: ${cwdPreprocPath}`);
+      preprocPath = cwdPreprocPath;
+    }
+    
     // Create the preprocessor and initialize it
     const preprocessor = new KnowledgePreProcessor();
-    const initialized = await preprocessor.initialize(
-      runtime.path.join(__dirname, 'conf', 'preproc-mcp.json')
-    );
+    const initialized = await preprocessor.initialize(preprocPath);
     
     if (initialized) {
       // Set the preprocessor on the agent
       CxAgent.setQueryPreProcessor(preprocessor);
       console.log('MCP Knowledge preprocessor initialized and set up with the agent');
     } else {
-      console.debug('No MCP Knowledge preprocessor configured');
+      console.log('No MCP Knowledge preprocessor configured');
     }
   } catch (error) {
     console.error('Error setting up MCP Knowledge preprocessor:', error);
