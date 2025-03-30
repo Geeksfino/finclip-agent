@@ -1,6 +1,8 @@
-# CxAgent
+# FinClip-Agent
 
-CxAgent is an AI-powered customer experience agent built on the actgent framework. It provides automated customer support through natural language interaction via both CLI and web interfaces. It can use MCP (Model Context Protocol) server to access knowledge base and other services. Its frontend is embeddable to any website.
+FinClip-Agent is an AI-powered customer experience agent built on the actgent framework. It provides automated customer support through natural language interaction via both CLI and web interfaces. **With just a single line of code, you can embed the chat widget into any website** - making it incredibly easy to add AI-powered support to your web applications. The agent can use MCP (Model Context Protocol) server to access knowledge base and other services, providing intelligent responses based on your custom data.
+
+> **Looking for better control over customer support content?** Check out [finclip-agent-starterkit](https://github.com/Geeksfino/finclip-agent-starterkit) - a ready-to-use solution for integrating custom knowledge bases with your agent. This helps improve Q&A quality and prevents hallucinations by grounding responses in your own documentation and data.
 
 ## Table of Contents
 
@@ -94,6 +96,8 @@ No installation required. Just run:
 
 ```bash
 bunx @finogeek/cxagent --inspect 
+
+bunx @finogeek/cxagent --inspect --inspect-port 3000
 ```
 That's it. This should start a chatbot that does casual chats as a companion. You can point your browser to `http://localhost:5173` to inspect it and chat with it. To embed it into your own website, follow the 'Embedding Instructions' section on the page.
 
