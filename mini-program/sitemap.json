@@ -1,0 +1,7 @@
+{
+  "desc": "FinClip Agent Chat Mini-Program sitemap",
+  "rules": [{
+    "action": "allow",
+    "page": "*"
+  }]
+}

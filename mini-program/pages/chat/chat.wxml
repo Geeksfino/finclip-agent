@@ -1,0 +1,93 @@
+<!-- chat.wxml -->
+<view class="chat-container">
+  <!-- Message Area -->
+  <scroll-view 
+    class="message-list"
+    scroll-y="true"
+    scroll-into-view="{{lastMessageId}}"
+    enhanced="true"
+    bounces="true"
+    show-scrollbar="false">
+    
+    <!-- Error message if any -->
+    <view wx:if="{{error}}" class="error-container">
+      <view class="error-message">{{error}}</view>
+      <view class="error-reset" bindtap="onResetError">Dismiss</view>
+    </view>
+    
+    <!-- Initial welcome with suggestions (when no messages) -->
+    <block wx:if="{{messages.length === 0}}">
+      <view class="welcome-container">
+        <view class="welcome-message">Welcome to FinClip Assistant</view>
+        <view class="welcome-desc">I can help you with questions about FinClip, SuperApps, and mini-program technology.</view>
+        <view class="suggestions-container">
+          <view class="suggestions-label">Try asking about:</view>
+          <view class="suggestions">
+            <block wx:for="{{suggestions}}" wx:key="*this">
+              <view class="suggestion-chip" bindtap="onSuggestionTap" data-suggestion="{{item}}">
+                {{item}}
+              </view>
+            </block>
+          </view>
+        </view>
+      </view>
+    </block>
+    
+    <!-- Messages -->
+    <block wx:for="{{messages}}" wx:key="id">
+      <view id="msg-{{item.id}}" class="message-container {{item.role}}">
+        <view class="avatar">
+          <image class="avatar-image" src="../../assets/{{item.role === 'user' ? 'user' : 'assistant'}}-avatar.png" />
+        </view>
+        <view class="message-content">
+          <view class="message-bubble">
+            <!-- Use rich-text when formattedContent is available (markdown content) -->
+            <block wx:if="{{item.formattedContent}}">
+              <rich-text class="rich-content" nodes="{{item.formattedContent}}" user-select="true"></rich-text>
+            </block>
+            <!-- Fallback to plain text when no formatted content -->
+            <block wx:else>
+              <text user-select="true" decode="true">{{item.content}}</text>
+            </block>
+          </view>
+          <view wx:if="{{item.role === 'assistant'}}" class="message-actions">
+            <view class="copy-button" bindtap="copyMessage" data-content="{{item.content}}">Copy</view>
+          </view>
+        </view>
+      </view>
+    </block>
+    
+    <!-- Typing indicator -->
+    <view wx:if="{{isTyping}}" class="typing-container">
+      <view class="avatar">
+        <image class="avatar-image" src="../../assets/assistant-avatar.png" />
+      </view>
+      <view class="typing-indicator">
+        <view class="typing-dot"></view>
+        <view class="typing-dot"></view>
+        <view class="typing-dot"></view>
+      </view>
+    </view>
+    
+    <!-- Bottom spacing -->
+    <view class="bottom-space"></view>
+  </scroll-view>
+  
+  <!-- Input Area -->
+  <view class="input-container">
+    <input 
+      class="message-input" 
+      value="{{inputValue}}"
+      placeholder="Ask me anything..."
+      placeholder-class="input-placeholder"
+      bindinput="onInputChange"
+      confirm-type="send"
+      bindconfirm="onSend"
+      disabled="{{isTyping}}"
+      focus="{{false}}"
+    />
+    <view class="send-button {{inputValue ? 'active' : ''}}" bindtap="onSend">
+      <view class="send-icon"></view>
+    </view>
+  </view>
+</view>
