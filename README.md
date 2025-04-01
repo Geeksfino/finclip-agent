@@ -102,7 +102,7 @@ capabilities: >-
   ChatAgent: "Oh I know! This rain just won't quit. Perfect day for staying in with a book though - what are you up to today?"
 ---
 ```
-**Note**: The 'brain.md' file has a YAML frontmatter that contains the agent's name, role, goal, capabilities, and guidelines. For more details for customizing an agent see https://github.com/Geeksfino/actgent.git for more detail. It can be very powerful with the use of instructions, tools and schemas. But for simple chatbot, you can just use the default settings.
+**IMPORTANT**: The 'brain.md' file must strictly conform to YAML frontmatter format with only the following top-level fields allowed: 'name', 'role', 'goal', and 'capabilities'. Any other structure or additional top-level fields will cause parsing errors and prevent the agent from starting correctly. Guidelines and examples should be included within the 'capabilities' field as shown above. For more details on customizing an agent, see https://github.com/Geeksfino/actgent.git. While the agent can be very powerful with instructions, tools, and schemas, simple chatbots can use the default settings.
 
 ### Start the server
 
@@ -254,7 +254,14 @@ AGENT_ENABLE_STREAMING=true
 
 ### Agent Brain
 
-The `brain.md` file defines your agent's personality, capabilities, and behavior. It uses a YAML frontmatter format:
+The `brain.md` file defines your agent's personality, capabilities, and behavior. It uses a YAML frontmatter format with strict requirements:
+
+**Format Requirements:**
+- Must use valid YAML syntax
+- Only four top-level fields are allowed: `name`, `role`, `goal`, and `capabilities`
+- Any additional top-level fields will cause parsing errors
+- Guidelines, examples, and other content should be nested within the `capabilities` field
+- The file must start and end with `---` to properly define the YAML frontmatter
 
 ```markdown
 ---
