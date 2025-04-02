@@ -86,10 +86,12 @@
   display: flex;
   margin-bottom: 16px;
   animation: fadeIn 0.3s ease;
+  width: 100%;
 }
 
 .message-container.user {
   flex-direction: row-reverse;
+  justify-content: flex-end;
 }
 
 .avatar {
@@ -101,6 +103,16 @@
   flex-shrink: 0;
 }
 
+.user .avatar {
+  margin-left: 8px;
+  margin-right: 0;
+}
+
+.assistant .avatar {
+  margin-right: 8px;
+  margin-left: 0;
+}
+
 .avatar-image {
   width: 100%;
   height: 100%;
@@ -108,10 +120,16 @@
 
 .message-content {
   max-width: 75%;
+  display: flex;
+  flex-direction: column;
 }
 
 .user .message-content {
   align-items: flex-end;
+}
+
+.assistant .message-content {
+  align-items: flex-start;
 }
 
 .message-bubble {
@@ -120,6 +138,7 @@
   font-size: 14px;
   line-height: 1.5;
   word-wrap: break-word;
+  max-width: 100%;
 }
 
 /* Rich content styles */
@@ -146,11 +165,13 @@
 .user .message-bubble {
   background-color: var(--user-message-bg);
   border-top-right-radius: 4px;
+  margin-right: 0;
 }
 
 .assistant .message-bubble {
   background-color: var(--assistant-message-bg);
   border-top-left-radius: 4px;
+  margin-left: 0;
 }
 
 .message-actions {
