@@ -24,7 +24,15 @@ Page({
   onLoad: function() {
     // Initialize buffer for partial JSON chunks
     this.chunkBuffer = '';
-    this.createSession('Hello');
+    
+    // Add initial welcome message without creating a session
+    this.setData({
+      messages: [{
+        role: 'assistant',
+        content: 'Hello! I\'m your FinClip Assistant. How can I help you today?',
+        id: 'welcome-message'
+      }]
+    });
   },
 
   // Enhanced input change handler with key detection for desktop
@@ -194,7 +202,7 @@ Page({
 
   createSession: function(initialMessage) {
     const that = this;
-    wx.showLoading({ title: 'Connecting...' });
+    wx.showLoading({ title: 'Starting conversation...' });
     
     wx.request({
       url: `${app.globalData.apiUrl}/createSession`,
@@ -208,8 +216,9 @@ Page({
         if (res.statusCode === 200 && res.data.sessionId) {
           console.log('Session created:', res.data.sessionId);
           app.globalData.sessionId = res.data.sessionId;
-          // Add welcome message
-          that.appendAssistantMessage('Hello! I\'m your FinClip Assistant. How can I help you today?');
+          
+          // Now that we have a session, send the first message
+          that.sendMessage(initialMessage);
         } else {
           console.error('Failed to create session:', res);
           that.setData({
@@ -220,7 +229,8 @@ Page({
       fail: function(err) {
         console.error('Create session request failed:', err);
         that.setData({
-          error: 'Network error. Please check your connection.'
+          error: 'Network error. Please check your connection.',
+          isTyping: false
         });
       },
       complete: function() {
@@ -230,8 +240,9 @@ Page({
   },
 
   sendMessage: function(content) {
+    // If no active session exists, create one first
     if (!app.globalData.sessionId) {
-      console.error('No active session');
+      console.log('Creating new session for first message');
       this.createSession(content);
       return;
     }
