@@ -15,7 +15,10 @@ Page({
     error: null,
     suggestions: DEFAULT_SUGGESTIONS,
     lastMessageId: null,
-    isStreaming: false
+    isStreaming: false,
+    textareaFocused: false,
+    textareaHeight: 40, // Initial height in pixels
+    isShiftKeyPressed: false // Track if Shift is pressed (limited support)
   },
 
   onLoad: function() {
@@ -24,25 +27,169 @@ Page({
     this.createSession('Hello');
   },
 
-  onInputChange: function(e) {
+  // Enhanced input change handler with key detection for desktop
+  onInputWithKeyWatch: function(e) {
+    const value = e.detail.value;
+    const cursor = e.detail.cursor;
+    const keyCode = e.detail.keyCode;
+    
+    // Detect if Enter key was pressed (desktop emulator)
+    // keyCode 13 is Enter
+    const lastChar = value.charAt(cursor - 1);
+    const isEnterKeyEvent = keyCode === 13 || lastChar === '\n';
+    
+    // Special handling for Enter key on desktop
+    if (isEnterKeyEvent && !e.detail.value.endsWith('\n\n')) { 
+      // If Shift key isn't pressed (check for keyCode or a standalone newline)
+      // This is a simplified heuristic since we can't directly detect Shift on mini-program
+      const isShiftEnter = this.data.isShiftKeyPressed;
+      
+      if (!isShiftEnter && value.trim() && !this.data.isTyping) {
+        console.log('Enter key detected in desktop environment');
+        
+        // If this looks like a standalone Enter for sending (not Shift+Enter for newline)
+        // Let's submit the form
+        setTimeout(() => {
+          // Remove the trailing newline from the input
+          const cleanValue = value.endsWith('\n') ? value.slice(0, -1) : value;
+          
+          // First update the input value without the newline
+          this.setData({ inputValue: cleanValue });
+          
+          // Then submit
+          this.onFormSubmit({ detail: { value: { message: cleanValue } } });
+        }, 10);
+        
+        return;
+      }
+    }
+    
+    // Normal input handling
     this.setData({
-      inputValue: e.detail.value
+      inputValue: value
     });
+    
+    // Calculate height based on input text
+    this.calculateTextareaHeight(value);
+  },
+  
+  // Calculate textarea height based on content
+  calculateTextareaHeight: function(text) {
+    // Constants for calculations
+    const LINE_HEIGHT = 20; // Line height in pixels
+    const MIN_HEIGHT = 40;  // Minimum height (pixels)
+    const MAX_HEIGHT = 200; // Maximum height (pixels)
+    const PADDING = 20;     // Total padding (top + bottom)
+    const CHARS_PER_LINE = 24; // Approximate characters per line
+    
+    let numLines = 1;
+    
+    if (!text) {
+      // Empty text - use min height
+      numLines = 1;
+    } else {
+      // Count explicit newlines
+      const newlines = (text.match(/\n/g) || []).length;
+      
+      // Count character-based line wrapping
+      // Get text without newlines to calculate wrapping
+      const textWithoutNewlines = text.replace(/\n/g, '');
+      const wrappedLines = Math.ceil(textWithoutNewlines.length / CHARS_PER_LINE);
+      
+      // Total lines is newlines + wrapped lines
+      numLines = newlines + wrappedLines;
+    }
+    
+    // Calculate height based on lines (plus padding)
+    let height = (numLines * LINE_HEIGHT) + PADDING;
+    
+    // Bound within min/max
+    height = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, height));
+    
+    // Only update if height changed
+    if (this.data.textareaHeight !== height) {
+      this.setData({
+        textareaHeight: height
+      });
+    }
+  },
+
+  onTextareaFocus: function() {
+    this.setData({
+      textareaFocused: true
+    });
+    // Scroll to bottom when focusing the textarea
+    this.scrollToBottom();
+  },
+
+  onTextareaBlur: function() {
+    this.setData({
+      textareaFocused: false
+    });
+  },
+
+  // Handle form submit (triggered by Enter key or submit button)
+  onFormSubmit: function(e) {
+    console.log('Form submitted:', e);
+    
+    // Don't proceed if we're already typing a response
+    if (this.data.isTyping) return;
+    
+    // Get message from form, or use the current inputValue
+    const message = e.detail.value.message || this.data.inputValue;
+    
+    // Only send if there's actual content
+    if (message && message.trim()) {
+      // Use the onSend method
+      this.onSend();
+    }
+  },
+  
+  // Handle keyboard events for additional context
+  onKeyboardEvent: function(e) {
+    console.log('Keyboard event:', e.detail);
+    
+    // We could use this to detect Shift key in some environments
+    // but it's not consistently available in mini-program
   },
 
   onSend: function() {
     const { inputValue } = this.data;
     if (!inputValue.trim() || this.data.isTyping) return;
-
-    this.sendMessage(inputValue);
-    this.setData({ inputValue: '' });
+    
+    // Get the trimmed input value
+    const trimmedInput = inputValue.trim();
+    
+    // Add user message to chat
+    this.appendUserMessage(trimmedInput);
+    
+    // Reset input and maintain focus
+    this.setData({ 
+      inputValue: '' 
+    });
+    
+    // Send the message
+    this.sendMessage(trimmedInput);
+    
+    // Set focus back to textarea after a short delay
+    setTimeout(() => {
+      this.setData({
+        textareaFocused: true
+      });
+    }, 100);
   },
 
   onSuggestionTap: function(e) {
     const suggestion = e.currentTarget.dataset.suggestion;
-    this.setData({ inputValue: suggestion });
-    this.sendMessage(suggestion);
+    
+    // Add user message to chat
+    this.appendUserMessage(suggestion);
+    
+    // Clear input
     this.setData({ inputValue: '' });
+    
+    // Send the message
+    this.sendMessage(suggestion);
   },
 
   createSession: function(initialMessage) {
@@ -89,8 +236,7 @@ Page({
       return;
     }
 
-    // Add user message
-    this.appendUserMessage(content);
+    // Show typing indicator
     this.setData({ isTyping: true });
 
     // Send message to API

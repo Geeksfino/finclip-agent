@@ -74,20 +74,35 @@
   </scroll-view>
   
   <!-- Input Area -->
-  <view class="input-container">
-    <input 
-      class="message-input" 
-      value="{{inputValue}}"
-      placeholder="Ask me anything..."
-      placeholder-class="input-placeholder"
-      bindinput="onInputChange"
-      confirm-type="send"
-      bindconfirm="onSend"
-      disabled="{{isTyping}}"
-      focus="{{false}}"
-    />
-    <view class="send-button {{inputValue ? 'active' : ''}}" bindtap="onSend">
-      <view class="send-icon"></view>
+  <form bindsubmit="onFormSubmit">
+    <view class="input-container {{textareaFocused ? 'focused' : ''}}">
+      <textarea 
+        class="message-input" 
+        name="message"
+        value="{{inputValue}}"
+        placeholder="Ask me anything..."
+        placeholder-class="input-placeholder"
+        bindinput="onInputWithKeyWatch"
+        bindfocus="onTextareaFocus"
+        bindblur="onTextareaBlur"
+        bindkeyboardheightchange="onKeyboardEvent"
+        bindconfirm="onFormSubmit"
+        show-confirm-bar="{{false}}"
+        maxlength="2000"
+        cursor-spacing="10"
+        style="height: {{textareaHeight}}px; line-height: 20px;"
+        disabled="{{isTyping}}"
+        focus="{{false}}"
+        adjust-position="{{true}}"
+        confirm-type="send"
+        confirm-hold="{{false}}"
+      />
+      <button 
+        form-type="submit" 
+        class="send-button {{inputValue ? 'active' : ''}}"
+      >
+        <view class="send-icon"></view>
+      </button>
     </view>
-  </view>
+  </form>
 </view>
