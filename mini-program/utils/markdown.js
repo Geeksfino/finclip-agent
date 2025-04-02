@@ -157,8 +157,8 @@ function processHeaders(text, nodes) {
  * @returns {string} Remaining text
  */
 function processLists(text, nodes) {
-  // Find consecutive list items
-  const listRegex = /^((?:\s*[-*+]|\s*\d+\.)\s+.+(?:\n|$))+/gm;
+  // Find consecutive list items - more permissive pattern to match bullet points
+  const listRegex = /^((?:\s*[-*+•✓✔☑]|\s*\d+\.)\s+.+(?:\n|$))+/gm;
   let lastIndex = 0;
   let match;
   
@@ -181,41 +181,83 @@ function processLists(text, nodes) {
       children: []
     };
     
-    // Split into list items
-    const listItemRegex = /^\s*([-*+]|\d+\.)\s+(.+)(?:\n|$)/gm;
+    // Split into list items - more permissive pattern
+    const listItemRegex = /^\s*([-*+•✓✔☑]|\d+\.)\s+(.+)(?:\n|$)/gm;
     let itemMatch;
     const listContent = match[0];
     
     while ((itemMatch = listItemRegex.exec(listContent)) !== null) {
       const [, bullet, content] = itemMatch;
       const isOrdered = /^\d+\./.test(bullet);
+      const isCheckbox = /[✓✔☑]/.test(bullet);
       
-      list.children.push({
-        name: 'div',
-        attrs: {
-          class: 'markdown-list-item',
-          style: 'margin: 4px 0 4px 8px; display: flex;'
-        },
-        children: [
-          {
-            name: 'div',
-            attrs: {
-              style: 'margin-right: 8px; min-width: 20px;'
-            },
-            children: [{
-              type: 'text',
-              text: isOrdered ? bullet : '•'
-            }]
+      // Handle special bullets
+      const bulletText = isOrdered ? bullet : 
+                         isCheckbox ? '✅' : 
+                         '•'; // Using a larger bullet for visibility
+      
+      // Process content for checkbox pattern [x] or [X]
+      let processedContent = content;
+      if (processedContent.match(/^\s*\[(x|X|\s)\]\s*(.*)/)) {
+        const checkboxMatch = processedContent.match(/^\s*\[(x|X|\s)\]\s*(.*)/);
+        const isChecked = checkboxMatch[1].toLowerCase() === 'x';
+        processedContent = checkboxMatch[2];
+        
+        list.children.push({
+          name: 'div',
+          attrs: {
+            class: 'markdown-list-item',
+            style: 'margin: 4px 0 4px 8px; display: flex; align-items: center;'
           },
-          {
-            name: 'div',
-            attrs: {
-              style: 'flex: 1;'
+          children: [
+            {
+              name: 'span',
+              attrs: {
+                style: 'margin-right: 8px; font-size: 16px;'
+              },
+              children: [{
+                type: 'text',
+                text: isChecked ? '✅' : '⬜'
+              }]
             },
-            children: processInlineElements(content)
-          }
-        ]
-      });
+            {
+              name: 'div',
+              attrs: {
+                style: 'flex: 1;'
+              },
+              children: processInlineElements(processedContent)
+            }
+          ]
+        });
+      } else {
+        // Regular list item
+        list.children.push({
+          name: 'div',
+          attrs: {
+            class: 'markdown-list-item',
+            style: 'margin: 4px 0 4px 8px; display: flex; align-items: center;'
+          },
+          children: [
+            {
+              name: 'span',
+              attrs: {
+                style: 'margin-right: 8px; min-width: 20px; font-size: 18px; display: inline-block;'
+              },
+              children: [{
+                type: 'text',
+                text: bulletText
+              }]
+            },
+            {
+              name: 'div',
+              attrs: {
+                style: 'flex: 1;'
+              },
+              children: processInlineElements(processedContent)
+            }
+          ]
+        });
+      }
     }
     
     nodes.push(list);
@@ -234,10 +276,25 @@ function processLists(text, nodes) {
 function processInlineElements(text) {
   if (!text) return [];
   
-  // First, check if there are any inline elements
+  // First, check if there are any inline elements or emojis
   const hasInlineElements = /(`[^`]+`|\*\*.*?\*\*|__.*?__|\*.*?\*|_.*?_|\[.*?\]\(.*?\))/.test(text);
-  if (!hasInlineElements) {
-    return [{ type: 'text', text }];
+  const hasEmojis = /[\u{1F300}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u.test(text);
+  
+  if (!hasInlineElements && !hasEmojis) {
+    // Simple text without special formatting
+    return [{ 
+      name: 'span',
+      children: [{ type: 'text', text }]
+    }];
+  } else if (!hasInlineElements && hasEmojis) {
+    // Just emojis, special handling with a different style
+    return [{ 
+      name: 'span',
+      attrs: {
+        style: 'display: inline-block;' // Helps with emoji rendering
+      },
+      children: [{ type: 'text', text }]
+    }];
   }
   
   // Process inline elements
@@ -262,8 +319,11 @@ function processInlineElements(text) {
   // Add any remaining text
   if (processedText) {
     segments.push({
-      type: 'text',
-      text: processedText
+      name: 'span',
+      children: [{
+        type: 'text',
+        text: processedText
+      }]
     });
   }
   
@@ -292,7 +352,7 @@ function processInlineCode(text, segments) {
     
     // Add inline code
     segments.push({
-      name: 'text',
+      name: 'span',
       attrs: {
         style: 'background-color: #f0f0f0; padding: 2px 4px; border-radius: 3px; font-family: monospace;'
       },
@@ -331,7 +391,7 @@ function processBold(text, segments) {
     
     // Add bold text
     segments.push({
-      name: 'text',
+      name: 'span',
       attrs: {
         style: 'font-weight: bold;'
       },
@@ -370,7 +430,7 @@ function processItalic(text, segments) {
     
     // Add italic text
     segments.push({
-      name: 'text',
+      name: 'span',
       attrs: {
         style: 'font-style: italic;'
       },
@@ -402,14 +462,17 @@ function processLinks(text, segments) {
     // Add text before link
     if (match.index > lastIndex) {
       segments.push({
-        type: 'text',
-        text: text.substring(lastIndex, match.index)
+        name: 'span',
+        children: [{
+          type: 'text',
+          text: text.substring(lastIndex, match.index)
+        }]
       });
     }
     
     // Add link
     segments.push({
-      name: 'text',
+      name: 'span',
       attrs: {
         style: 'color: #0366d6; text-decoration: underline;'
       },
@@ -427,7 +490,7 @@ function processLinks(text, segments) {
 }
 
 /**
- * Simple version that converts markdown to plain text with some formatting
+ * Enhanced version that converts markdown to plain text with formatting
  * @param {string} text - Markdown text to parse
  * @returns {string} Formatted text
  */
@@ -466,7 +529,20 @@ function parseMarkdown(text) {
   // Replace links - keep only the text, discard the URL
   formattedText = formattedText.replace(/\[(.*?)\]\(.*?\)/g, '$1');
   
+  // Process checkboxes [x] or [ ]
+  formattedText = formattedText.replace(/\[x\]/gi, '✅');
+  formattedText = formattedText.replace(/\[ \]/g, '⬜');
+  
   return formattedText;
+}
+
+// Special handling for check marks (green check marks for WeChat)
+function replaceCheckmarks(text) {
+  return text
+    .replace(/✓/g, '✅') // ✓ to ✅
+    .replace(/✔/g, '✅') // ✔ to ✅
+    .replace(/☑/g, '✅') // ☑ to ✅
+    .replace(/\[x\]/gi, '✅'); // [x] to ✅
 }
 
 module.exports = {

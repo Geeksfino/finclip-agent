@@ -19,6 +19,8 @@ Page({
   },
 
   onLoad: function() {
+    // Initialize buffer for partial JSON chunks
+    this.chunkBuffer = '';
     this.createSession('Hello');
   },
 
@@ -189,59 +191,36 @@ Page({
       console.log('Received keepalive');
       return;
     }
+    
+    // Check for completion signal in raw text
+    if (chunk.includes('"type":"completion"') && chunk.includes('"reason":"stop"')) {
+      console.log('Completion signal received in raw format');
+      this.setData({ 
+        isStreaming: false,
+        isTyping: false
+      });
+      return;
+    }
 
+    // Add the chunk to our buffer
+    this.chunkBuffer += chunk;
+    
     try {
-      // Parse the JSON data
-      let data;
-      try {
-        data = JSON.parse(chunk);
-        
-        // Handle completion signal
-        if (data.type === 'completion' && data.reason === 'stop') {
-          console.log('Streaming complete');
-          this.setData({ 
-            isStreaming: false,
-            isTyping: false
-          });
+      // First, try to extract valid JSON objects from the buffer
+      this.processBufferedChunks();
+      
+      // If we still have content in the buffer, it might be plain text
+      if (this.chunkBuffer.trim()) {
+        // Check if buffer ends with what looks like an incomplete JSON
+        if (this.isIncompleteJson(this.chunkBuffer)) {
+          console.log('Buffer contains incomplete JSON, waiting for more chunks');
           return;
         }
         
-        // Handle connected message
-        if (data.type === 'connected') {
-          console.log('Stream connected, session:', data.sessionId);
-          return;
-        }
-        
-        // Handle error messages
-        if (data.type === 'error') {
-          console.error('Server error:', data.message || data.error);
-          this.setData({
-            error: data.message || data.error || 'Server error',
-            isStreaming: false,
-            isTyping: false
-          });
-          return;
-        }
-        
-        // Handle message with content field
-        if (data.content) {
-          this.appendAssistantMessage(data.content);
-          return;
-        }
-
-        // Handle message with choices/delta structure (OpenAI compatible format)
-        if (data.choices && data.choices[0] && data.choices[0].delta) {
-          const delta = data.choices[0].delta;
-          if (delta.content) {
-            this.appendAssistantMessage(delta.content);
-          }
-          return;
-        }
-      } catch (e) {
-        // Not valid JSON, log and treat as plain text
-        console.log('Error parsing JSON chunk:', e);
-        console.log('Treating chunk as plain text:', chunk.substring(0, 100));
-        this.appendAssistantMessage(chunk);
+        // Otherwise treat remaining buffer as plain text
+        console.log('Processing remaining buffer as plain text');
+        this.appendAssistantMessage(this.chunkBuffer);
+        this.chunkBuffer = '';
       }
     } catch (err) {
       console.error('Error processing stream chunk:', err);
@@ -250,6 +229,117 @@ Page({
         isTyping: false
       });
     }
+  },
+  
+  // Process any complete JSON objects in buffer
+  processBufferedChunks: function() {
+    let buffer = this.chunkBuffer;
+    let validObjects = [];
+    let currentPosition = 0;
+    
+    // Try to find complete JSON objects in buffer
+    while (currentPosition < buffer.length) {
+      try {
+        // Try to find a JSON object starting at current position
+        let startPos = buffer.indexOf('{', currentPosition);
+        if (startPos === -1) break;
+        
+        // Find matching closing brace
+        let depth = 0;
+        let endPos = -1;
+        
+        for (let i = startPos; i < buffer.length; i++) {
+          if (buffer[i] === '{') depth++;
+          else if (buffer[i] === '}') {
+            depth--;
+            if (depth === 0) {
+              endPos = i + 1;
+              break;
+            }
+          }
+        }
+        
+        if (endPos === -1) {
+          // No complete JSON object found
+          currentPosition = startPos + 1;
+          continue;
+        }
+        
+        // Extract and parse the JSON object
+        let jsonStr = buffer.substring(startPos, endPos);
+        let jsonObj = JSON.parse(jsonStr);
+        
+        // Process the JSON object
+        this.processJsonObject(jsonObj);
+        
+        // Remove the processed object from buffer
+        buffer = buffer.substring(0, startPos) + buffer.substring(endPos);
+        currentPosition = 0; // Reset position since we modified the buffer
+      } catch (e) {
+        console.log('Error processing JSON in buffer:', e);
+        currentPosition++;
+      }
+    }
+    
+    // Update the buffer with any remaining content
+    this.chunkBuffer = buffer;
+  },
+  
+  // Process a single valid JSON object
+  processJsonObject: function(data) {
+    console.log('Processing JSON object:', data);
+    
+    // Handle completion signal
+    if (data.type === 'completion' && data.reason === 'stop') {
+      console.log('Streaming complete');
+      this.setData({ 
+        isStreaming: false,
+        isTyping: false
+      });
+      return;
+    }
+    
+    // Handle connected message
+    if (data.type === 'connected') {
+      console.log('Stream connected, session:', data.sessionId);
+      return;
+    }
+    
+    // Handle content message
+    if (data.type === 'content' || data.content) {
+      this.appendAssistantMessage(data.content);
+      return;
+    }
+    
+    // Handle error messages
+    if (data.type === 'error') {
+      console.error('Server error:', data.message || data.error);
+      this.setData({
+        error: data.message || data.error || 'Server error',
+        isStreaming: false,
+        isTyping: false
+      });
+      return;
+    }
+    
+    // Handle choices/delta structure (OpenAI compatible format)
+    if (data.choices && data.choices[0] && data.choices[0].delta) {
+      const delta = data.choices[0].delta;
+      if (delta.content) {
+        this.appendAssistantMessage(delta.content);
+      }
+      return;
+    }
+  },
+  
+  // Check if string looks like an incomplete JSON object
+  isIncompleteJson: function(str) {
+    // Count opening and closing braces
+    let openBraces = (str.match(/\{/g) || []).length;
+    let closeBraces = (str.match(/\}/g) || []).length;
+    
+    // If we have unbalanced braces, it's likely incomplete JSON
+    return openBraces !== closeBraces && str.includes('{');
   },
 
   appendUserMessage: function(content) {
