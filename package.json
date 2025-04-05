@@ -41,6 +41,7 @@
     "@finogeek/actgent": "^1.0.5",
     "commander": "^12.1.0",
     "dotenv": "^16.4.7",
+    "towxml": "^3.0.6",
     "uuid": "^9.0.1",
     "ws": "^8.16.0"
   },

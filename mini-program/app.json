@@ -20,5 +20,11 @@
     "scope.userLocation": {
       "desc": "You can use location when asking location-specific questions"
     }
+  },
+  "usingComponents": {
+    "towxml": "/towxml/towxml"
+  },
+  "useExtendedLib": {
+    "weui": true
   }
 }

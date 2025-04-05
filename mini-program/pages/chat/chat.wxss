@@ -5,12 +5,18 @@
   height: 100vh;
   background-color: #FFFFFF;
   padding-bottom: env(safe-area-inset-bottom);
+  overflow-x: hidden;
+  width: 100%;
 }
 
 /* Message list */
 .message-list {
   flex: 1;
-  padding: 10px 15px;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  box-sizing: border-box;
+  --assistant-message-bg: white;
   overflow-y: auto;
 }
 
@@ -21,6 +27,7 @@
   padding: 12px;
   margin: 10px 0;
   animation: fadeIn 0.3s ease;
+  width: 100%;
 }
 
 .error-message {
@@ -39,6 +46,7 @@
 .welcome-container {
   padding: 20px 10px;
   animation: fadeIn 0.5s ease;
+  width: 100%;
 }
 
 .welcome-message {
@@ -57,6 +65,7 @@
 /* Suggestions */
 .suggestions-container {
   margin: 10px 0;
+  width: 100%;
 }
 
 .suggestions-label {
@@ -69,6 +78,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  width: 100%;
 }
 
 .suggestion-chip {
@@ -81,36 +91,90 @@
   margin-bottom: 8px;
 }
 
-/* Message container */
-.message-container {
-  display: flex;
-  margin-bottom: 16px;
-  animation: fadeIn 0.3s ease;
+/* Towxml overrides */
+.towxml-container {
   width: 100%;
 }
 
+/* Fix base text styles */
+.towxml-container .h2w {
+  line-height: 1.4;
+  font-size: 28rpx;
+}
+
+/* Fix list spacing */
+.towxml-container .h2w__ul,
+.towxml-container .h2w__ol {
+  margin-bottom: 8rpx;
+  padding-left: 1rem;
+}
+
+.towxml-container .h2w__li {
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Fix paragraph spacing */
+.towxml-container .h2w__p {
+  margin: 4rpx 0;
+  line-height: 1.4;
+}
+
+/* Fix heading spacing */
+.towxml-container .h2w__h1,
+.towxml-container .h2w__h2,
+.towxml-container .h2w__h3,
+.towxml-container .h2w__h4,
+.towxml-container .h2w__h5,
+.towxml-container .h2w__h6 {
+  margin-top: 16rpx;
+  margin-bottom: 8rpx;
+}
+
+/* Message container */
+.message-container {
+  display: flex;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+
+.message-container.assistant {
+  display: flex;
+  align-items: flex-start;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  background-color: white;
+  margin-bottom: 8px;
+}
+
 .message-container.user {
-  flex-direction: row-reverse;
+  display: flex;
   justify-content: flex-end;
+  padding: 0;
+  margin: 8px 0;
+  width: 100%;
 }
 
 .avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  overflow: hidden;
-  margin: 0 8px;
-  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  position: absolute;
+  left: 8px;
+  top: 10px;
 }
 
 .user .avatar {
-  margin-left: 8px;
-  margin-right: 0;
+  right: 16px;
+  margin-top: 4px;
+  display: none; /* Hide user avatar for OpenAI style */
 }
 
-.assistant .avatar {
-  margin-right: 8px;
-  margin-left: 0;
+.assistant-avatar {
+  left: 0;
+  margin-left: 8px;
+  margin-top: 8px;
 }
 
 .avatar-image {
@@ -119,31 +183,212 @@
 }
 
 .message-content {
-  max-width: 75%;
   display: flex;
   flex-direction: column;
-}
-
-.user .message-content {
-  align-items: flex-end;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .assistant .message-content {
-  align-items: flex-start;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  min-width: 0;
+}
+
+.user .message-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
 }
 
 .message-bubble {
-  padding: 10px 12px;
-  border-radius: var(--border-radius);
   font-size: 14px;
   line-height: 1.5;
-  word-wrap: break-word;
-  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-wrap: break-word;
 }
+
+.message-bubble.assistant-bubble {
+  width: 100%;
+  padding: 4px 16px;
+  margin: 0;
+  border-radius: 0;
+  background: none;
+  display: block;
+  position: relative;
+}
+
+.message-bubble.user-bubble {
+  display: inline-block;
+  width: auto;
+  max-width: 80%;
+  padding: 10px 12px;
+  margin: 0 16px;
+  background-color: #F0F0F0;
+  border-radius: 12px;
+  border-top-right-radius: 4px;
+}
+
+.message-text {
+  white-space: pre-wrap;
+  word-break: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  width: 100%;
+  display: block;
+}
+
+.assistant-bubble .message-text {
+  width: 100%;
+  display: block;
+  white-space: pre-wrap;
+  word-break: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.user .message-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.text-container {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  padding-right: 28px;
+}
+
+.message-text {
+  flex: 1;
+  white-space: pre-wrap;
+  word-break: break-word;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+
 
 /* Rich content styles */
 .rich-content {
   width: 100%;
+}
+
+/* Towxml container styles */
+.towxml-container {
+  position: relative;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+.towxml-container .h2w {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  line-height: 1.5;
+}
+
+.towxml-container .h2w > * {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  line-height: inherit;
+}
+
+/* Reset towxml base styles */
+.towxml-container .h2w {
+  font-size: 14px;
+  line-height: 1.5;
+  word-break: normal;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+/* Ensure paragraphs are properly aligned */
+.towxml-container .h2w__p {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+/* Fix code block alignment */
+.towxml-container .h2w__pre {
+  margin: 10px 0;
+  padding: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  background-color: #f6f8fa;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
+/* Fix inline code alignment */
+.towxml-container .h2w__code {
+  background-color: rgba(175,184,193,0.2);
+  padding: 0.2em 0.4em;
+  border-radius: 6px;
+  font-size: 85%;
+  font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
+}
+
+/* Fix table styles */
+.towxml-container .h2w__table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+  display: table;
+  overflow-x: auto;
+}
+
+.towxml-container .h2w__tr {
+  border-bottom: 1px solid #ddd;
+  display: table-row;
+}
+
+.towxml-container .h2w__th,
+.towxml-container .h2w__td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+  display: table-cell;
+}
+
+.towxml-container .h2w__th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+/* Fix list styles */
+.towxml-container .h2w__ul,
+.towxml-container .h2w__ol {
+  margin: 10px 0;
+  padding-left: 20px;
+  display: block;
+}
+
+.towxml-container .h2w__li {
+  margin: 5px 0;
+  display: list-item;
+}
+
+/* Fix line break styles */
+.towxml-container .h2w__p {
+  margin: 10px 0;
+  line-height: 1.5;
+  display: block;
 }
 
 /* Ensure code blocks scroll horizontally when needed */
@@ -166,30 +411,33 @@
   background-color: var(--user-message-bg);
   border-top-right-radius: 4px;
   margin-right: 0;
+  width: 100%;
 }
 
 .assistant .message-bubble {
   background-color: var(--assistant-message-bg);
   border-top-left-radius: 4px;
   margin-left: 0;
+  width: 100%;
 }
 
 .message-actions {
   display: flex;
-  justify-content: flex-end;
-  margin-top: 4px;
+  align-items: center;
+  margin-top: -4px;
+  padding: 0 16px;
 }
 
-.copy-button {
-  font-size: 12px;
-  color: #666666;
-  padding: 4px 8px;
+.copy-icon {
+  width: 16px;
+  height: 16px;
 }
 
 /* Typing indicator */
 .typing-container {
   display: flex;
   margin-bottom: 16px;
+  width: 100%;
 }
 
 .typing-indicator {
@@ -199,6 +447,7 @@
   padding: 12px 16px;
   border-radius: var(--border-radius);
   border-top-left-radius: 4px;
+  width: 100%;
 }
 
 .typing-dot {
@@ -227,6 +476,7 @@
   background-color: #FFFFFF;
   align-items: flex-end;
   transition: padding 0.2s ease;
+  width: 100%;
 }
 
 .input-container.focused {
@@ -251,6 +501,7 @@
   /* Fix for vertical expansion issues on first line wrap */
   margin: 0;
   display: block;
+  width: 100%;
 }
 
 .input-placeholder {

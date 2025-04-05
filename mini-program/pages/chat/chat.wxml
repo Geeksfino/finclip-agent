@@ -1,4 +1,9 @@
 <!-- chat.wxml -->
+<wxs module="styles">
+module.exports = {
+  assistantBg: "background-color: white !important;"
+}
+</wxs>
 <view class="chat-container">
   <!-- Message Area -->
   <scroll-view 
@@ -36,22 +41,23 @@
     <!-- Messages -->
     <block wx:for="{{messages}}" wx:key="id">
       <view id="msg-{{item.id}}" class="message-container {{item.role}}">
-        <view class="avatar">
+        <view class="avatar {{item.role === 'assistant' ? 'assistant-avatar' : ''}}">
           <image class="avatar-image" src="../../assets/{{item.role === 'user' ? 'user' : 'assistant'}}-avatar.png" />
         </view>
-        <view class="message-content">
-          <view class="message-bubble">
-            <!-- Use rich-text when formattedContent is available (markdown content) -->
-            <block wx:if="{{item.formattedContent}}">
-              <rich-text class="rich-content" nodes="{{item.formattedContent}}" user-select="true"></rich-text>
+        <view class="message-content {{item.role}}-content">
+          <view class="message-bubble {{item.role}}-bubble">
+            <!-- Use towxml when rendered content is available (markdown content) -->
+            <block wx:if="{{item.rendered}}">
+              <view class="towxml-container">
+                <towxml nodes="{{item.rendered}}" selectable="true" linenumber="{{false}}" latex="{{false}}" highlight="{{true}}"></towxml>
+              </view>
             </block>
-            <!-- Fallback to plain text when no formatted content -->
+            <!-- Fallback to plain text when no rendered content -->
             <block wx:else>
-              <text user-select="true" decode="true">{{item.content}}</text>
+              <view class="text-container">
+                <text user-select="true" decode="true" space="nbsp" class="message-text">{{item.content}}</text>
+              </view>
             </block>
-          </view>
-          <view wx:if="{{item.role === 'assistant'}}" class="message-actions">
-            <view class="copy-button" bindtap="copyMessage" data-content="{{item.content}}">Copy</view>
           </view>
         </view>
       </view>
@@ -91,8 +97,8 @@
         maxlength="2000"
         cursor-spacing="10"
         style="height: {{textareaHeight}}px; line-height: 20px;"
-        disabled="{{isTyping}}"
-        focus="{{false}}"
+        disabled="{{inputDisabled}}"
+        focus="{{!inputDisabled}}"
         adjust-position="{{true}}"
         confirm-type="send"
         confirm-hold="{{false}}"

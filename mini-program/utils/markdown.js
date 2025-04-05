@@ -91,18 +91,79 @@ function processTextChunk(text) {
   if (!text) return [];
   
   const nodes = [];
-  let currentText = text;
   
-  // Process headers
-  currentText = processHeaders(currentText, nodes);
+  // Split text into paragraphs (double line breaks)
+  const paragraphs = text.split(/\n\s*\n+/);
   
-  // Process lists
-  currentText = processLists(currentText, nodes);
-  
-  // Process remaining inline elements
-  if (currentText.trim()) {
-    const inlineNodes = processInlineElements(currentText);
-    nodes.push(...inlineNodes);
+  // Process each paragraph
+  for (let i = 0; i < paragraphs.length; i++) {
+    const paragraph = paragraphs[i].trim();
+    if (!paragraph) continue;
+    
+    let currentText = paragraph;
+    
+    // Process headers
+    currentText = processHeaders(currentText, nodes);
+    
+    // Process tables (before lists to avoid conflicts)
+    currentText = processTables(currentText, nodes);
+    
+    // Process lists
+    currentText = processLists(currentText, nodes);
+    
+    // Process remaining inline elements
+    if (currentText.trim()) {
+      // Handle single line breaks within paragraphs
+      const lines = currentText.split(/\n/);
+      if (lines.length > 1) {
+        const lineNodes = [];
+        
+        for (let j = 0; j < lines.length; j++) {
+          const line = lines[j].trim();
+          if (!line) continue;
+          
+          // Add line content
+          const inlineNodes = processInlineElements(line);
+          lineNodes.push(...inlineNodes);
+          
+          // Add line break if not the last line
+          if (j < lines.length - 1) {
+            lineNodes.push({
+              name: 'br'
+            });
+          }
+        }
+        
+        // Wrap in a paragraph if not already in one
+        nodes.push({
+          name: 'p',
+          attrs: {
+            style: 'margin: 8px 0;'
+          },
+          children: lineNodes
+        });
+      } else {
+        // Single line paragraph
+        const inlineNodes = processInlineElements(currentText);
+        nodes.push({
+          name: 'p',
+          attrs: {
+            style: 'margin: 8px 0;'
+          },
+          children: inlineNodes
+        });
+      }
+    }
+    
+    // Add paragraph break if not the last paragraph
+    if (i < paragraphs.length - 1) {
+      nodes.push({
+        name: 'div',
+        attrs: {
+          style: 'height: 8px;'
+        }
+      });
+    }
   }
   
   return nodes;
@@ -117,20 +178,27 @@ function processTextChunk(text) {
 function processHeaders(text, nodes) {
   const headerRegex = /^(#{1,6})\s+(.+?)(?:\n|$)/gm;
   
-  let lastIndex = 0;
+  let processedText = text;
+  let matches = [];
   let match;
   
+  // First collect all matches to avoid regex state issues
   while ((match = headerRegex.exec(text)) !== null) {
-    const [fullMatch, hashes, content] = match;
+    matches.push({
+      fullMatch: match[0],
+      hashes: match[1],
+      content: match[2],
+      index: match.index
+    });
+  }
+  
+  // Sort matches by index in reverse order to safely replace from end to beginning
+  matches.sort((a, b) => b.index - a.index);
+  
+  // Process each header match, starting from the end of the text
+  for (const match of matches) {
+    const { fullMatch, hashes, content, index } = match;
     const level = hashes.length;
-    
-    // Add text before header if any
-    if (match.index > lastIndex) {
-      const beforeText = text.substring(lastIndex, match.index);
-      if (beforeText.trim()) {
-        nodes.push(...processInlineElements(beforeText));
-      }
-    }
     
     // Add header node
     const fontSize = 28 - (level * 2); // h1 = 22px, h6 = 12px
@@ -143,11 +211,20 @@ function processHeaders(text, nodes) {
       children: processInlineElements(content)
     });
     
-    lastIndex = match.index + fullMatch.length;
+    // Remove the header from the text to prevent duplication
+    processedText = processedText.substring(0, index) + '\n' + processedText.substring(index + fullMatch.length);
   }
   
-  // Return remaining text
-  return lastIndex > 0 ? text.substring(lastIndex) : text;
+  // Process remaining text for other elements
+  if (processedText.trim()) {
+    const remainingNodes = processInlineElements(processedText);
+    if (remainingNodes.length > 0) {
+      nodes.push(...remainingNodes);
+    }
+  }
+  
+  // Return empty string since we've processed all headers and added remaining content to nodes
+  return '';
 }
 
 /**
@@ -157,8 +234,8 @@ function processHeaders(text, nodes) {
  * @returns {string} Remaining text
  */
 function processLists(text, nodes) {
-  // Find consecutive list items - more permissive pattern to match bullet points
-  const listRegex = /^((?:\s*[-*+•✓✔☑]|\s*\d+\.)\s+.+(?:\n|$))+/gm;
+  // Find consecutive list items - improved pattern to better match all types of lists
+  const listRegex = /^((?:\s*[-*+•✓✔☑]|\s*\d+\.)[ \t]+.+(?:\n|$))+/gm;
   let lastIndex = 0;
   let match;
   
@@ -176,13 +253,13 @@ function processLists(text, nodes) {
       name: 'div',
       attrs: {
         class: 'markdown-list',
-        style: 'margin: 8px 0;'
+        style: 'margin: 12px 0; padding-left: 12px;'
       },
       children: []
     };
     
-    // Split into list items - more permissive pattern
-    const listItemRegex = /^\s*([-*+•✓✔☑]|\d+\.)\s+(.+)(?:\n|$)/gm;
+    // Split into list items - improved pattern for better matching
+    const listItemRegex = /^[ \t]*([-*+•✓✔☑]|\d+\.)[ \t]+(.+)(?:\n|$)/gm;
     let itemMatch;
     const listContent = match[0];
     
@@ -207,7 +284,7 @@ function processLists(text, nodes) {
           name: 'div',
           attrs: {
             class: 'markdown-list-item',
-            style: 'margin: 4px 0 4px 8px; display: flex; align-items: center;'
+            style: 'margin: 4px 0 4px 4px; display: flex; align-items: flex-start;'
           },
           children: [
             {
@@ -235,13 +312,13 @@ function processLists(text, nodes) {
           name: 'div',
           attrs: {
             class: 'markdown-list-item',
-            style: 'margin: 4px 0 4px 8px; display: flex; align-items: center;'
+            style: 'margin: 4px 0 4px 4px; display: flex; align-items: flex-start;'
           },
           children: [
             {
               name: 'span',
               attrs: {
-                style: 'margin-right: 8px; min-width: 20px; font-size: 18px; display: inline-block;'
+                style: 'margin-right: 8px; min-width: 16px; font-size: 16px; display: inline-block;'
               },
               children: [{
                 type: 'text',
@@ -267,6 +344,117 @@ function processLists(text, nodes) {
   // Return remaining text
   return lastIndex > 0 ? text.substring(lastIndex) : text;
 }
+
+/**
+ * Process markdown tables
+ * @param {string} text - Text to process
+ * @param {Array} nodes - Nodes array to append to
+ * @returns {string} Remaining text
+ */
+function processTables(text, nodes) {
+  // Match markdown tables - requires header row, separator row, and at least one data row
+  // | Header 1 | Header 2 |
+  // | -------- | -------- |
+  // | Cell 1   | Cell 2   |
+  const tableRegex = /^\|(.+\|)+\n\|([\s-:|]+\|)+\n(\|(.+\|)+\n)+/gm;
+  
+  let lastIndex = 0;
+  let match;
+  
+  while ((match = tableRegex.exec(text)) !== null) {
+    // Add text before table if any
+    if (match.index > lastIndex) {
+      const beforeText = text.substring(lastIndex, match.index);
+      if (beforeText.trim()) {
+        nodes.push(...processInlineElements(beforeText));
+      }
+    }
+    
+    // Extract the table content
+    const tableContent = match[0];
+    const tableRows = tableContent.trim().split('\n');
+    
+    // Create table element
+    const table = {
+      name: 'div',
+      attrs: {
+        class: 'markdown-table-container',
+        style: 'margin: 12px 0; overflow-x: auto;'
+      },
+      children: [{
+        name: 'table',
+        attrs: {
+          class: 'markdown-table',
+          style: 'width: 100%; border-collapse: collapse; border-spacing: 0;'
+        },
+        children: []
+      }]
+    };
+    
+    // Process header row
+    const headerRow = {
+      name: 'tr',
+      attrs: {
+        style: 'background-color: #f8f8f8;'
+      },
+      children: []
+    };
+    
+    // Extract header cells
+    const headerCells = tableRows[0].split('|').filter(cell => cell.trim() !== '');
+    for (const cell of headerCells) {
+      headerRow.children.push({
+        name: 'th',
+        attrs: {
+          style: 'padding: 8px; border: 1px solid #ddd; text-align: left; font-weight: bold;'
+        },
+        children: processInlineElements(cell.trim())
+      });
+    }
+    
+    // Add header row to table
+    table.children[0].children.push(headerRow);
+    
+    // Process data rows (skip header and separator rows)
+    for (let i = 2; i < tableRows.length; i++) {
+      const rowContent = tableRows[i];
+      if (!rowContent.trim()) continue;
+      
+      const dataRow = {
+        name: 'tr',
+        attrs: {
+          style: i % 2 === 0 ? 'background-color: #f8f8f8;' : ''
+        },
+        children: []
+      };
+      
+      // Extract data cells
+      const dataCells = rowContent.split('|').filter(cell => cell.trim() !== '');
+      for (const cell of dataCells) {
+        dataRow.children.push({
+          name: 'td',
+          attrs: {
+            style: 'padding: 8px; border: 1px solid #ddd;'
+          },
+          children: processInlineElements(cell.trim())
+        });
+      }
+      
+      // Add data row to table
+      table.children[0].children.push(dataRow);
+    }
+    
+    // Add table to nodes
+    nodes.push(table);
+    
+    lastIndex = match.index + match[0].length;
+  }
+  
+  // Return remaining text
+  return lastIndex > 0 ? text.substring(lastIndex) : text;
+}
+
+
 
 /**
  * Process inline markdown elements (bold, italic, code, links)
