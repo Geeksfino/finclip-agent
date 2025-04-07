@@ -1,11 +1,18 @@
 // chat.js
 const app = getApp();
 const markdown = require('../../utils/towxml-helper');
+const websocketManager = require('../../utils/websocket-manager');
 const DEFAULT_SUGGESTIONS = [
   "What is a SuperApp?",
   "Explain to me Mini-program technology",
   "How does SuperApp empower digital business?"
 ];
+
+// Communication mode constants
+const COMM_MODE = {
+  HTTP_STREAMING: 'http_streaming',
+  WEBSOCKET: 'websocket'
+};
 
 Page({
   data: {
@@ -18,12 +25,21 @@ Page({
     isStreaming: false,
     textareaFocused: false,
     textareaHeight: 40, // Initial height in pixels
-    isShiftKeyPressed: false // Track if Shift is pressed (limited support)
+    isShiftKeyPressed: false, // Track if Shift is pressed (limited support)
+    commMode: COMM_MODE.HTTP_STREAMING, // Default to HTTP streaming
+    wsConnected: false, // WebSocket connection status
+    wsReconnecting: false // WebSocket reconnection status
   },
 
   onLoad: function() {
     // Initialize buffer for partial JSON chunks
     this.chunkBuffer = '';
+    
+    // Determine communication mode based on app configuration
+    const useWebSocket = app.globalData.useWebSocket;
+    const commMode = useWebSocket ? COMM_MODE.WEBSOCKET : COMM_MODE.HTTP_STREAMING;
+    
+    console.log(`[Chat] Initializing with communication mode: ${commMode}`);
     
     // Add initial welcome message without creating a session
     const welcomeMessage = {
@@ -35,11 +51,82 @@ Page({
     };
     
     this.setData({
-      messages: [welcomeMessage]
+      messages: [welcomeMessage],
+      commMode: commMode
+    });
+    
+    // Set up WebSocket event handlers if WebSocket mode is enabled
+    if (commMode === COMM_MODE.WEBSOCKET) {
+      this._setupWebSocketHandlers();
+    }
+  },
+  
+  // Set up WebSocket event handlers
+  _setupWebSocketHandlers: function() {
+    // Stream event - handles streaming content chunks
+    websocketManager.on('stream', (data) => {
+      if (!this.data.isTyping) {
+        this.setData({ isTyping: true });
+      }
+      
+      let content = '';
+      if (data.choices && data.choices.length > 0) {
+        if (data.choices[0].delta && data.choices[0].delta.content) {
+          content = data.choices[0].delta.content;
+        } else if (data.choices[0].content) {
+          content = data.choices[0].content;
+        }
+      }
+      
+      if (content) {
+        // Handle the content chunk similar to HTTP streaming
+        this.handleRawContent(content);
+      }
+    });
+    
+    // Completion event - stream is complete
+    websocketManager.on('completion', () => {
+      console.log('[Chat] WebSocket stream complete');
+      this.finalizeContent();
+    });
+    
+    // Error event
+    websocketManager.on('error', (error) => {
+      console.error('[Chat] WebSocket error:', error);
+      this.setData({
+        error: error.error || 'Connection error. Please try again.',
+        isTyping: false
+      });
+    });
+    
+    // Reconnecting event
+    websocketManager.on('reconnecting', (data) => {
+      console.log('[Chat] WebSocket reconnecting:', data);
+      this.setData({
+        wsReconnecting: true
+      });
+    });
+    
+    // Reconnected event
+    websocketManager.on('reconnected', () => {
+      console.log('[Chat] WebSocket reconnected');
+      this.setData({
+        wsConnected: true,
+        wsReconnecting: false
+      });
+    });
+    
+    // Reconnect failed event - fall back to HTTP streaming
+    websocketManager.on('reconnectFailed', () => {
+      console.log('[Chat] WebSocket reconnect failed, falling back to HTTP streaming');
+      this.setData({
+        commMode: COMM_MODE.HTTP_STREAMING,
+        wsConnected: false,
+        wsReconnecting: false
+      });
     });
   },
 
-  // Enhanced input change handler with key detection for desktop
   onInputWithKeyWatch: function(e) {
     const value = e.detail.value;
     const cursor = e.detail.cursor;
@@ -153,7 +240,7 @@ Page({
     // Only send if there's actual content
     if (message && message.trim()) {
       // Use the onSend method
-      this.onSend();
+      this.onSend(message);
     }
   },
   
@@ -205,84 +292,187 @@ Page({
   },
 
   createSession: function(initialMessage) {
-    const that = this;
-    wx.showLoading({ title: 'Starting conversation...' });
+    console.log('Creating new session...');
+    
+    // Choose the appropriate method based on communication mode
+    if (this.data.commMode === COMM_MODE.WEBSOCKET) {
+      this._createSessionWebSocket(initialMessage);
+    } else {
+      this._createSessionHTTP(initialMessage);
+    }
+  },
+  
+  // Create session using WebSocket
+  _createSessionWebSocket: function(initialMessage) {
+    console.log('[Chat] Creating session via WebSocket');
+    
+    // First connect to WebSocket server if not already connected
+    if (!websocketManager.isConnected) {
+      this.setData({ isTyping: true });
+      
+      websocketManager.connect(app.globalData.wsUrl)
+        .then(() => {
+          console.log('[Chat] WebSocket connected, creating session');
+          this.setData({ wsConnected: true });
+          
+          // Now create the session
+          return websocketManager.createSession(
+            'mini-program-user',
+            'FinClip Mini-Program Chat Session',
+            initialMessage
+          );
+        })
+        .then(sessionId => {
+          console.log('[Chat] Session created via WebSocket:', sessionId);
+          app.globalData.sessionId = sessionId;
+        })
+        .catch(error => {
+          console.error('[Chat] WebSocket connection or session creation error:', error);
+          this.setData({
+            error: 'Failed to connect to chat service. Please try again.'
+          });
+        });
+    } else {
+      // Already connected, just create session
+      websocketManager.createSession(
+        'mini-program-user',
+        'FinClip Mini-Program Chat Session',
+        initialMessage
+      )
+      .then(sessionId => {
+        console.log('[Chat] Session created via WebSocket:', sessionId);
+        app.globalData.sessionId = sessionId;
+      })
+      .catch(error => {
+        console.error('[Chat] WebSocket session creation error:', error);
+        this.setData({
+          error: 'Failed to create session. Please try again.'
+        });
+      });
+    }
+  },
+
+  // Create session using HTTP (original implementation)
+  _createSessionHTTP: function(initialMessage) {
+    console.log('[Chat] Creating session via HTTP');
     
     wx.request({
       url: `${app.globalData.apiUrl}/createSession`,
       method: 'POST',
       data: {
-        owner: 'miniprogram-user',
-        description: initialMessage,
+        owner: 'mini-program-user',
+        description: 'FinClip Mini-Program Chat Session',
         enhancePrompt: false
       },
-      success: function(res) {
-        if (res.statusCode === 200 && res.data.sessionId) {
-          console.log('Session created:', res.data.sessionId);
-          app.globalData.sessionId = res.data.sessionId;
+      success: (res) => {
+        if (res.statusCode === 200 && res.data && res.data.sessionId) {
+          const sessionId = res.data.sessionId;
+          console.log('Session created:', sessionId);
+          app.globalData.sessionId = sessionId;
           
-          // Now that we have a session, send the first message
-          that.sendMessage(initialMessage);
+          // If there's an initial message, send it immediately
+          if (initialMessage) {
+            this._sendMessageHTTP(initialMessage, sessionId);
+          }
         } else {
           console.error('Failed to create session:', res);
-          that.setData({
-            error: 'Failed to connect to assistant. Please try again.'
+          this.setData({
+            error: 'Failed to create session. Please try again.'
           });
         }
       },
-      fail: function(err) {
-        console.error('Create session request failed:', err);
-        that.setData({
-          error: 'Network error. Please check your connection.',
-          isTyping: false
+      fail: (err) => {
+        console.error('Session creation error:', err);
+        this.setData({
+          error: 'Network error. Please check your connection and try again.'
         });
       },
-      complete: function() {
-        wx.hideLoading();
+      complete: () => {
+        // Complete handler if needed
       }
     });
   },
 
   sendMessage: function(content) {
-    // If no active session exists, create one first
-    if (!app.globalData.sessionId) {
-      console.log('Creating new session for first message');
+    const sessionId = app.globalData.sessionId;
+    
+    if (!sessionId) {
+      console.log('No session ID, creating new session');
       this.createSession(content);
       return;
     }
-
-    // Show typing indicator and disable input
-    this.setData({ 
+    
+    console.log('Sending message with existing session:', sessionId);
+    
+    // Set typing indicator
+    this.setData({
       isTyping: true,
-      inputDisabled: true
+      error: null
     });
-
-    // Send message to API
+    
+    // Choose the appropriate method based on communication mode
+    if (this.data.commMode === COMM_MODE.WEBSOCKET && this.data.wsConnected) {
+      this._sendMessageWebSocket(content, sessionId);
+    } else {
+      this._sendMessageHTTP(content, sessionId);
+    }
+  },
+  
+  // Send message using WebSocket
+  _sendMessageWebSocket: function(content, sessionId) {
+    console.log('[Chat] Sending message via WebSocket');
+    
+    websocketManager.sendChatMessage(content)
+      .then(() => {
+        console.log('[Chat] Message sent successfully via WebSocket');
+        // No need to start streaming as WebSocket will push updates automatically
+        // The stream event handlers set up in _setupWebSocketHandlers will handle incoming data
+      })
+      .catch(error => {
+        console.error('[Chat] WebSocket message sending error:', error);
+        
+        // Fall back to HTTP if WebSocket fails
+        console.log('[Chat] Falling back to HTTP for this message');
+        this.setData({
+          commMode: COMM_MODE.HTTP_STREAMING,
+          wsConnected: false
+        });
+        
+        // Try again with HTTP
+        this._sendMessageHTTP(content, sessionId);
+      });
+  },
+  
+  // Send message using HTTP (original implementation)
+  _sendMessageHTTP: function(content, sessionId) {
+    console.log('[Chat] Sending message via HTTP');
+    
     wx.request({
       url: `${app.globalData.apiUrl}/chat`,
       method: 'POST',
       data: {
-        sessionId: app.globalData.sessionId,
+        sessionId: sessionId,
         message: content
       },
       success: (res) => {
         if (res.statusCode === 200) {
           console.log('Message sent successfully');
-          // Start streaming for response
+          
+          // Start streaming the response
           this.startStreaming();
         } else {
-          console.error('Send message failed:', res);
+          console.error('Failed to send message:', res);
           this.setData({
-            error: 'Failed to send message. Please try again.',
-            isTyping: false
+            isTyping: false,
+            error: 'Failed to send message. Please try again.'
           });
         }
       },
       fail: (err) => {
-        console.error('Send message request failed:', err);
+        console.error('Message sending error:', err);
         this.setData({
-          error: 'Network error. Please check your connection.',
-          isTyping: false
+          isTyping: false,
+          error: 'Network error. Please check your connection and try again.'
         });
       }
     });
@@ -1178,5 +1368,19 @@ finalizeContent: function() {
 
   onUnload: function() {
     this.setData({ isStreaming: false });
+    
+    // Clean up WebSocket connections and event listeners
+    if (this.data.commMode === COMM_MODE.WEBSOCKET && websocketManager.isConnected) {
+      console.log('[Chat] Cleaning up WebSocket connections');
+      websocketManager.off('stream');
+      websocketManager.off('completion');
+      websocketManager.off('error');
+      websocketManager.off('reconnecting');
+      websocketManager.off('reconnected');
+      websocketManager.off('reconnectFailed');
+      
+      // Don't close the connection as it might be used by other pages
+      // websocketManager.close();
+    }
   }
 })
