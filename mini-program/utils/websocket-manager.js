@@ -73,12 +73,10 @@ class WebSocketManager {
 
   /**
    * Create a new session
-   * @param {string} owner - Session owner
-   * @param {string} description - Session description
-   * @param {string} initialMessage - Optional initial message
+   * @param {string} description - Session description/initial message
    * @returns {Promise} - Resolves with session ID
    */
-  createSession(owner, description, initialMessage = null) {
+  createSession(description) {
     return new Promise((resolve, reject) => {
       if (!this.isConnected) {
         reject(new Error('WebSocket not connected'));
@@ -87,15 +85,10 @@ class WebSocketManager {
 
       const createSessionMsg = {
         type: 'createSession',
-        owner: owner,
         description: description
       };
 
-      // Add initial message if provided
-      if (initialMessage) {
-        createSessionMsg.message = initialMessage;
-        console.log('[WebSocketManager] Creating session with initial message:', initialMessage);
-      }
+      console.log('[WebSocketManager] Creating session with description:', description);
 
       // Set up one-time handler for session creation response
       this.once('sessionCreated', (data) => {

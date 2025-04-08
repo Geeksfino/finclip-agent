@@ -304,7 +304,7 @@ Page({
   
   // Create session using WebSocket
   _createSessionWebSocket: function(initialMessage) {
-    console.log('[Chat] Creating session via WebSocket');
+    console.log('[Chat] Creating session via WebSocket with message:', initialMessage);
     
     // First connect to WebSocket server if not already connected
     if (!websocketManager.isConnected) {
@@ -315,38 +315,39 @@ Page({
           console.log('[Chat] WebSocket connected, creating session');
           this.setData({ wsConnected: true });
           
-          // Now create the session
+          // Create the session with the initial message as the description
+          // This will send the message to the LLM as part of session creation
           return websocketManager.createSession(
-            'mini-program-user',
-            'FinClip Mini-Program Chat Session',
             initialMessage
           );
         })
         .then(sessionId => {
           console.log('[Chat] Session created via WebSocket:', sessionId);
           app.globalData.sessionId = sessionId;
+          // We don't need to send the message again, as createSession already sent it
         })
         .catch(error => {
           console.error('[Chat] WebSocket connection or session creation error:', error);
           this.setData({
-            error: 'Failed to connect to chat service. Please try again.'
+            error: 'Failed to connect to chat service. Please try again.',
+            isTyping: false
           });
         });
     } else {
       // Already connected, just create session
       websocketManager.createSession(
-        'mini-program-user',
-        'FinClip Mini-Program Chat Session',
         initialMessage
       )
       .then(sessionId => {
         console.log('[Chat] Session created via WebSocket:', sessionId);
         app.globalData.sessionId = sessionId;
+        // We don't need to send the message again, as createSession already sent it
       })
       .catch(error => {
         console.error('[Chat] WebSocket session creation error:', error);
         this.setData({
-          error: 'Failed to create session. Please try again.'
+          error: 'Failed to create session. Please try again.',
+          isTyping: false
         });
       });
     }
@@ -360,8 +361,7 @@ Page({
       url: `${app.globalData.apiUrl}/createSession`,
       method: 'POST',
       data: {
-        owner: 'mini-program-user',
-        description: 'FinClip Mini-Program Chat Session',
+        description: initialMessage || '',
         enhancePrompt: false
       },
       success: (res) => {
@@ -1251,15 +1251,20 @@ finalizeContent: function() {
         regex: /([\u{1F300}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}])([a-zA-Z])/gu,
         replacement: '$1 $2'
       },
-      // Fix for the example's numbered list with descriptions
+      // Fix for numbered list with bold titles
       {
-        regex: /(\d+\.)\s+\*\*([^*]+)\*\*\s*$/gm,
-        replacement: '$1 **$2**\n'
+        regex: /(\n|^)(\d+\.)\s+\*\*([^*]+)\*\*\s*$/gm,
+        replacement: '$1$2 **$3**\n'
       },
       // Main points and examples separation
-        {
+      {
         regex: /(\s*-\s+.*?)\s+(-\s+.*)/g,
         replacement: '$1\n   $2'
+      },
+      // NEW: Improved pattern for numbered lists with bold titles and sub-bullets
+      {
+        regex: /(\n|^)(\d+\.)\s+\*\*([^*]+)\*\*\s*\n\s*-\s+/gm,
+        replacement: '$1$2 **$3**\n   - '
       }
     ];
     
@@ -1282,18 +1287,30 @@ finalizeContent: function() {
     const lines = normalized.split('\n');
     let inList = false;
     let listIndentLevel = 0;
+    let inNumberedList = false;
     
     for (let i = 0; i < lines.length; i++) {
-      // Detect list items
-      if (/^\s*[-*+]\s/.test(lines[i])) {
+      // Detect numbered list items
+      const numberedMatch = lines[i].match(/^(\s*)(\d+)\.\s+/);
+      if (numberedMatch) {
+        inNumberedList = true;
+        
+        // Ensure proper spacing for sub-bullets in numbered lists
+        if (i + 1 < lines.length && lines[i+1].trim().startsWith('-')) {
+          lines[i+1] = '   ' + lines[i+1].trim();
+        }
+      }
+      // Detect bullet list items
+      else if (/^\s*[-*+]\s/.test(lines[i])) {
         inList = true;
         // Calculate indentation level
         const leadingSpaces = (lines[i].match(/^\s*/) || [''])[0].length;
         listIndentLevel = Math.floor(leadingSpaces / 2);
       } 
       // Detect the end of a list
-      else if (inList && lines[i].trim() === '') {
+      else if ((inList || inNumberedList) && lines[i].trim() === '') {
         inList = false;
+        inNumberedList = false;
         listIndentLevel = 0;
         // Ensure a blank line after lists
         if (i + 1 < lines.length && lines[i + 1].trim() !== '') {
@@ -1330,7 +1347,7 @@ finalizeContent: function() {
     console.log('Normalized markdown:', normalized);
     return normalized;
   },
-
+  
   scrollToBottom: function() {
     // Use a short delay to ensure rendered content is available
     setTimeout(() => {

@@ -1,4 +1,16 @@
 /* chat.wxss */
+:root {
+  --primary-color: #1976d2;
+  --secondary-color: #e3f2fd;
+  --text-color: #333333;
+  --background-color: #f5f5f5;
+  --border-color: #e0e0e0;
+  --success-color: #4caf50;
+  --error-color: #f44336;
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  --code-font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, 'Liberation Mono', monospace;
+}
+
 .chat-container {
   display: flex;
   flex-direction: column;
@@ -98,8 +110,25 @@
 
 /* Fix base text styles */
 .towxml-container .h2w {
-  line-height: 1.4;
-  font-size: 28rpx;
+  line-height: 1.5;
+  font-size: 30rpx;
+  font-family: var(--font-family);
+  color: #1a1a1a;
+  letter-spacing: -0.01em;
+  font-weight: 400;
+}
+
+/* Force proper indentation for non-list content */
+.towxml-container .h2w > *:not(.h2w__ul):not(.h2w__ol) {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+  text-indent: 0 !important;
+}
+
+/* Add stronger visual separation after lists */
+.towxml-container .h2w__ul + *:not(.h2w__ul):not(.h2w__ol),
+.towxml-container .h2w__ol + *:not(.h2w__ul):not(.h2w__ol) {
+  margin-top: 16px !important;
 }
 
 /* Fix list spacing */
@@ -107,17 +136,69 @@
 .towxml-container .h2w__ol {
   margin-bottom: 8rpx;
   padding-left: 1rem;
+  counter-reset: list-counter; /* Reset counter for each list */
 }
 
 .towxml-container .h2w__li {
   margin: 0;
   line-height: 1.4;
+  position: relative; /* Ensure positioning context for bullets */
+}
+
+/* Nested list styling - more comprehensive */
+.towxml-container .h2w__ol .h2w__ul,
+.towxml-container .h2w__ul .h2w__ul,
+.towxml-container .h2w__ol .h2w__ol,
+.towxml-container .h2w__ul .h2w__ol {
+  margin-top: 4px;
+  margin-bottom: 4px;
+  padding-left: 24px; /* Additional indentation for nested lists */
+}
+
+/* Ensure all list items in numbered lists are properly formatted */
+.towxml-container .h2w__ol > .h2w__li {
+  padding-left: 28px; /* Space for numbers */
+  margin-bottom: 4px; /* Spacing between items */
+  min-height: 24px; /* Ensure enough height for content */
+}
+
+/* Ensure sub-bullets in numbered lists are properly indented */
+.towxml-container .h2w__ol .h2w__li .h2w__ul .h2w__li,
+.towxml-container .h2w__ul .h2w__li .h2w__ul .h2w__li {
+  padding-left: 24px;
+  margin-left: 0;
+  margin-bottom: 2px;
+}
+
+/* Fix for nested list bullets */
+.towxml-container .h2w__ol .h2w__li .h2w__ul .h2w__li:before,
+.towxml-container .h2w__ul .h2w__li .h2w__ul .h2w__li:before {
+  content: '•'; /* Use bullet character for sub-bullets */
+  position: absolute;
+  left: 4px;
+  top: 0;
+  display: inline-block;
+  font-size: 18px;
+  color: #555;
+}
+
+/* Improve numbered list appearance */
+.towxml-container .h2w__ol > .h2w__li:before {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-weight: 600;
+  color: #333;
+  font-size: 15px;
 }
 
 /* Fix paragraph spacing */
 .towxml-container .h2w__p {
   margin: 4rpx 0;
-  line-height: 1.4;
+  font-family: var(--font-family);
+  font-size: 30rpx;
+  line-height: 1.5;
+  color: #1a1a1a;
 }
 
 /* Fix heading spacing */
@@ -128,7 +209,12 @@
 .towxml-container .h2w__h5,
 .towxml-container .h2w__h6 {
   margin-top: 16rpx;
-  margin-bottom: 8rpx;
+  margin-bottom: 4rpx; /* Reduced bottom margin to decrease space before lists */
+  font-family: var(--font-family);
+  font-weight: 600;
+  color: #000000;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
 }
 
 /* Message container */
@@ -337,11 +423,12 @@
 
 /* Fix inline code alignment */
 .towxml-container .h2w__code {
-  background-color: rgba(175,184,193,0.2);
+  background-color: rgba(0,0,0,0.05);
   padding: 0.2em 0.4em;
-  border-radius: 6px;
-  font-size: 85%;
-  font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
+  border-radius: 4px;
+  font-size: 90%;
+  font-family: var(--code-font-family);
+  color: #000000;
 }
 
 /* Fix table styles */
@@ -351,6 +438,7 @@
   margin: 10px 0;
   display: table;
   overflow-x: auto;
+  table-layout: fixed; /* Add fixed table layout for better column width control */
 }
 
 .towxml-container .h2w__tr {
@@ -364,6 +452,11 @@
   padding: 8px;
   text-align: left;
   display: table-cell;
+  word-wrap: break-word; /* Enable word wrapping */
+  word-break: break-word; /* Break words to prevent overflow */
+  overflow-wrap: break-word; /* Modern property for word wrapping */
+  max-width: 200px; /* Set a maximum width for cells */
+  white-space: normal; /* Allow text to wrap to multiple lines */
 }
 
 .towxml-container .h2w__th {
@@ -374,14 +467,70 @@
 /* Fix list styles */
 .towxml-container .h2w__ul,
 .towxml-container .h2w__ol {
-  margin: 10px 0;
+  margin: 4px 0 10px 0; /* Reduced top margin to decrease space after headings */
   padding-left: 20px;
   display: block;
+  counter-reset: list-counter; /* Reset counter for ordered lists */
 }
 
-.towxml-container .h2w__li {
-  margin: 5px 0;
+/* Unordered list items */
+.towxml-container .h2w__ul .h2w__li {
+  margin: 0 0 10px 0; /* Add bottom margin for better spacing between items */
   display: list-item;
+  list-style-type: none; /* Remove default bullets */
+  padding-bottom: 0;
+  position: relative;
+  padding-left: 20px; /* Better bullet alignment */
+  font-family: var(--font-family);
+  font-size: 30rpx;
+  line-height: 1.5;
+  color: #1a1a1a;
+}
+
+/* Add bullet points for unordered lists */
+.towxml-container .h2w__ul .h2w__li:before {
+  content: '•'; /* Use bullet character */
+  position: absolute;
+  left: 0px;
+  top: -2px;
+  display: inline-block;
+  margin-right: 8px;
+  font-size: 30px; /* Larger bullet size */
+  line-height: 1.5;
+  color: #555555; /* Lighter color for better visual hierarchy */
+}
+
+/* Ordered list items */
+.towxml-container .h2w__ol .h2w__li {
+  margin: 0; /* Remove vertical margins between list items */
+  display: list-item;
+  list-style-type: none; /* Remove default numbers */
+  padding-bottom: 2px; /* Small padding for better readability */
+  position: relative;
+  padding-left: 24px;
+  counter-increment: list-counter; /* Increment counter for each item */
+  font-family: var(--font-family);
+  font-size: 30rpx;
+  line-height: 1.5;
+  color: #1a1a1a;
+}
+
+/* Add numbers for ordered lists */
+.towxml-container .h2w__ol .h2w__li:before {
+  content: counter(list-counter) '.'; /* Use counter for numbering */
+  position: absolute;
+  left: 0;
+  display: inline-block;
+  margin-right: 8px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+/* Remove any other li:before styles that might interfere */
+.towxml-container .h2w__li:not(.h2w__ul .h2w__li):not(.h2w__ol .h2w__li):before {
+  content: '';
+  margin-right: 0;
+  display: none;
 }
 
 /* Fix line break styles */
