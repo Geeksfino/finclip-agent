@@ -4,7 +4,7 @@
     "": {
       "name": "@finogeek/cxagent",
       "dependencies": {
-        "@finogeek/actgent": "^1.0.5",
+        "@finogeek/actgent": "^1.0.6",
         "commander": "^12.1.0",
         "dotenv": "^16.4.7",
         "towxml": "^3.0.6",
@@ -70,7 +70,7 @@
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.21.5", "", { "os": "win32", "cpu": "x64" }, "sha512-tQd/1efJuzPC6rCFwEvLtci/xNFcTZknmXs98FYDfGE4wP9ClFV98nyKrzJKVPMhdDnjzLhdUyMX4PsQAPjwIw=="],
 
-    "@finogeek/actgent": ["@finogeek/actgent@1.0.5", "", { "dependencies": { "@grpc/grpc-js": "^1.12.4", "@modelcontextprotocol/sdk": "^1.7.0", "@tauri-apps/api": "^2.1.1", "@tauri-apps/plugin-fs": "^2.2.0", "@tauri-apps/plugin-log": "^2.2.0", "@tauri-apps/plugin-os": "^2.2.0", "@tauri-apps/plugin-process": "^2.2.0", "@tauri-apps/plugin-shell": "^2.2.0", "@types/bun": "^1.1.14", "@types/eventsource": "^1.1.15", "@types/js-yaml": "^4.0.9", "@types/minimist": "^1.2.5", "@types/string-similarity": "^4.0.2", "@types/turndown": "^5.0.5", "@xenova/transformers": "^2.17.2", "bottleneck": "^2.19.5", "bree": "^9.2.4", "cheerio": "^1.0.0", "cld3": "^2.0.6", "cld3-asm": "^4.0.0", "commander": "^12.1.0", "dotenv": "^16.4.7", "eventsource": "^2.0.2", "gray-matter": "^4.0.3", "header-generator": "^2.1.57", "js-yaml": "^4.1.0", "lru-cache": "^11.0.2", "mathjs": "^13.2.3", "nats": "^2.28.2", "openai": "^4.76.1", "picocolors": "^1.1.1", "pino": "^9.5.0", "pino-pretty": "^11.3.0", "proxy-agent": "^6.5.0", "reflect-metadata": "^0.2.2", "rxjs": "^7.8.1", "sequelize": "^6.37.5", "string-similarity": "^4.0.4", "turndown": "^7.2.0", "uuidv4": "^6.2.13", "wikipedia": "^2.1.2", "zod": "^3.24.1" }, "peerDependencies": { "typescript": "^5.6.3" } }, "sha512-Y9OPe2C0zVBbtU2GBKc7CKeVarjPPQAuxu/R+YRm3K7tSHDRnXsGb4+sOpGlgJfoz1nmHwGJwiZHkqZOPVLxng=="],
+    "@finogeek/actgent": ["@finogeek/actgent@1.0.6", "", { "dependencies": { "@grpc/grpc-js": "^1.12.4", "@modelcontextprotocol/sdk": "^1.7.0", "@tauri-apps/api": "^2.1.1", "@tauri-apps/plugin-fs": "^2.2.0", "@tauri-apps/plugin-log": "^2.2.0", "@tauri-apps/plugin-os": "^2.2.0", "@tauri-apps/plugin-process": "^2.2.0", "@tauri-apps/plugin-shell": "^2.2.0", "@types/bun": "^1.1.14", "@types/eventsource": "^1.1.15", "@types/js-yaml": "^4.0.9", "@types/minimist": "^1.2.5", "@types/string-similarity": "^4.0.2", "@types/turndown": "^5.0.5", "@xenova/transformers": "^2.17.2", "bottleneck": "^2.19.5", "bree": "^9.2.4", "cheerio": "^1.0.0", "cld3": "^2.0.6", "cld3-asm": "^4.0.0", "commander": "^12.1.0", "dotenv": "^16.4.7", "eventsource": "^2.0.2", "gray-matter": "^4.0.3", "header-generator": "^2.1.57", "js-yaml": "^4.1.0", "lru-cache": "^11.0.2", "mathjs": "^13.2.3", "nats": "^2.28.2", "openai": "^4.76.1", "picocolors": "^1.1.1", "pino": "^9.5.0", "pino-pretty": "^11.3.0", "proxy-agent": "^6.5.0", "reflect-metadata": "^0.2.2", "rxjs": "^7.8.1", "sequelize": "^6.37.5", "string-similarity": "^4.0.4", "turndown": "^7.2.0", "uuidv4": "^6.2.13", "wikipedia": "^2.1.2", "zod": "^3.24.1" }, "peerDependencies": { "typescript": "^5.6.3" } }, "sha512-18XsHpFq1owiRihSrBKhwtlH+TpuTfZ5lOlmRDXvyGQqQ5szMqYboB73vtj59pWp6TtkCfYTxTeu7Vr2rO9Vtw=="],
 
     "@grpc/grpc-js": ["@grpc/grpc-js@1.13.0", "", { "dependencies": { "@grpc/proto-loader": "^0.7.13", "@js-sdsl/ordered-map": "^4.4.2" } }, "sha512-pMuxInZjUnUkgMT2QLZclRqwk2ykJbIU05aZgPgJYXEpN9+2I7z7aNwcjWZSycRPl232FfhPszyBFJyOxTHNog=="],
 
