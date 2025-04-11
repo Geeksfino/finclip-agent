@@ -5,7 +5,6 @@ import { LoggingConfig } from "@finogeek/actgent/core";
 import { Logger, logger, LogLevel } from '@finogeek/actgent/core'
 import path from "path";
 import { program } from 'commander';
-import { startUI } from './src/cli/ui';
 
 // Configure command line options
 program
@@ -13,8 +12,6 @@ program
     .description('Customer Experience Agent powered by actgent framework')
     .version(process.env.npm_package_version || '1.0.6')
     .option('--log-level <level>', 'set logging level (trace, debug, info, warn, error, fatal)', 'info')
-    .option('--ui', 'start a web UI to visualize and interact with the agent')
-    .option('--ui-port <port>', 'specify the port for the web UI (default: 5173)', '5173')
     .option('--inspect', 'start the enhanced inspector UI to visualize agent configuration')
     .option('--inspect-port <port>', 'specify the port for the inspector UI (default: 5173)', '5173')
     .allowUnknownOption(false)
@@ -59,6 +56,22 @@ if (options.inspect) {
 
     // Import and start the new inspector UI
     const inspectPort = options.inspectPort;
+    
+    // Set up raw stdin handling for Ctrl+C in inspector mode
+    if (process.stdin.isTTY) {
+        process.stdin.setRawMode(true);
+        process.stdin.resume();
+        process.stdin.setEncoding('utf8');
+        process.stdin.on('data', (key: string) => {
+            // Ctrl+C is represented as '\u0003'
+            if (key === '\u0003') {
+                logger.info('Received Ctrl+C, shutting down...');
+                process.exit(0);
+            }
+        });
+        logger.info('Press Ctrl+C to stop');
+    }
+    
     import('./inspector/bridge.js').then(({ startUI: startInspector }) => {
         startInspector({
             port: parseInt(inspectPort),
@@ -66,7 +79,6 @@ if (options.inspect) {
             logLevel: options.logLevel.toLowerCase()
         }).then(() => {
             logger.info(`CxAgent Inspector is running at http://localhost:${inspectPort}`);
-            logger.info('Press Ctrl+C to stop');
         }).catch((error) => {
             logger.error('Failed to start Inspector:', error);
             process.exit(1);
@@ -76,27 +88,7 @@ if (options.inspect) {
         logger.error('Make sure the inspector directory is properly set up.');
         process.exit(1);
     });
-} else if (options.ui) {
-    logger.info('Starting CxAgent in UI mode...');
 
-    // Import CxAgent
-    const { CxAgent } = await import('./CxAgent');
-
-    // Start the agent
-    CxAgent.run(loggerConfig);
-
-    // Start the legacy UI
-    const uiPort = options.uiPort;
-    startUI({
-        port: parseInt(uiPort),
-        brainPath: path.join(process.cwd(), 'brain.md')
-    }).then(() => {
-        logger.info(`CxAgent UI is running at http://localhost:${uiPort}`);
-        logger.info('Press Ctrl+C to stop');
-    }).catch((error) => {
-        logger.error('Failed to start UI:', error);
-        process.exit(1);
-    });
 } else {
     // Import CxAgent
     const { CxAgent } = await import('./CxAgent');
@@ -241,14 +233,10 @@ if (options.inspect) {
     process.on('SIGINT', async () => {
         console.log("\nShutting down...");
         await CxAgent.shutdown();
-        if (!options.ui) {
-            rl.close();
-        }
+        rl.close();
         process.exit(0);
     });
 
-    // Start the chat loop only if not in UI mode
-    if (!options.ui) {
-        chatLoop();
-    }
+    // Start the chat loop
+    chatLoop();
 }
