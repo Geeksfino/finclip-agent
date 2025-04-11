@@ -4,6 +4,33 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FinClip Chat Widget Demo (Production)</title>
+  <!--
+    PRODUCTION TESTING INSTRUCTIONS:
+    
+    To properly test this example with CORS:
+    
+    1. Build the production files:
+       cd /path/to/finclip-agent/web
+       bun run build
+    
+    2. Serve the built files from port 3001:
+       cd /path/to/finclip-agent/web/dist
+       python -m http.server 3001
+       
+       OR using Bun:
+       cd /path/to/finclip-agent/web/dist
+       bun --serve --port 3001
+    
+    3. Start the backend API and streaming servers:
+       cd /path/to/finclip-agent
+       bun run start
+    
+    4. Access this example at:
+       http://localhost:3001/examples/embed-demo-prod.html
+    
+    NOTE: If you've modified the chat window size or styling, make sure to rebuild
+    the project before testing to see your changes reflected here.
+  -->
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
@@ -54,6 +81,13 @@
       margin-bottom: 20px;
       border-radius: 0 4px 4px 0;
     }
+    .testing-instructions {
+      background-color: #e6f7ff;
+      border-left: 4px solid #1890ff;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 0 4px 4px 0;
+    }
   </style>
 </head>
 <body>
@@ -62,6 +96,9 @@
     <p>This page demonstrates how to embed the FinClip chat widget on any website using the production build.</p>
     <div class="environment-notice">
       <strong>Production Environment:</strong> This demo is using the compiled production JavaScript file.
+    </div>
+    <div class="testing-instructions">
+      <strong>How to run this test:</strong> Serve this file from port 3001 using <code>python -m http.server 3001</code> or <code>bun --serve --port 3001</code> from the dist directory.
     </div>
   </header>
 
@@ -83,7 +120,7 @@
       <p>Adding the FinClip chat widget to your website is simple. Just include our script and add a single line of code:</p>
       <code>
         &lt;!-- Simple embedding --&gt;<br>
-        &lt;script src="https://your-domain.com/finclip-chat.js" data-finclip-chat&gt;&lt;/script&gt;
+        &lt;script src="https://your-domain.com/finclip-chat-embed.iife.js" data-finclip-chat&gt;&lt;/script&gt;
       </code>
       <p>For advanced configuration, you can initialize the widget manually:</p>
       <code>

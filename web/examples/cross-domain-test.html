@@ -4,6 +4,33 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CxAgent Cross-Domain Test</title>
+  <!--
+    CROSS-DOMAIN TESTING INSTRUCTIONS:
+    
+    To properly test this example with CORS:
+    
+    1. Build the production files:
+       cd /path/to/finclip-agent/web
+       bun run build
+    
+    2. Serve the built files from port 3001:
+       cd /path/to/finclip-agent/web/dist
+       python -m http.server 3001
+       
+       OR using Bun:
+       cd /path/to/finclip-agent/web/dist
+       bun --serve --port 3001
+    
+    3. Start the backend API and streaming servers:
+       cd /path/to/finclip-agent
+       bun run start
+    
+    4. Access this example at:
+       http://localhost:3001/examples/cross-domain-test.html
+    
+    NOTE: If you've modified the chat window size or styling, make sure to rebuild
+    the project before testing to see your changes reflected here.
+  -->
   <link rel="stylesheet" href="http://localhost:3001/style.css">
   <style>
     body {
@@ -48,12 +75,22 @@
       overflow-x: auto;
       margin: 20px 0;
     }
+    .testing-instructions {
+      background-color: #e6f7ff;
+      border-left: 4px solid #1890ff;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 0 4px 4px 0;
+    }
   </style>
 </head>
 <body>
   <header>
     <h1>CxAgent Cross-Domain Test</h1>
     <p>This page demonstrates a real-world scenario where the chat widget script and the agent backend are on different domains.</p>
+    <div class="testing-instructions">
+      <strong>How to run this test:</strong> Serve this file from port 3001 using <code>python -m http.server 3001</code> or <code>bun --serve --port 3001</code> from the dist directory.
+    </div>
   </header>
 
   <div class="content">
