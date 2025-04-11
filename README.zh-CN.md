@@ -14,7 +14,7 @@
   <a href="https://bun.sh"><img src="https://img.shields.io/badge/powered%20by-Bun-orange.svg" alt="由 Bun 提供支持"></a>
 </p>
 
-FinClip-Agent 是一个基于 actgent 框架构建的 AI 客户体验代理。它通过命令行和网页界面提供自然语言交互的自动化客户支持。**只需一行代码，您就可以将聊天小部件嵌入到任何网站中** - 这使得向您的网络应用程序添加 AI 支持变得极其简单。该代理可以使用 MCP（Model Context Protocol）服务器访问知识库和其他服务，基于您的自定义数据提供智能回应。
+FinClip-Agent 是一个超轻量级、支持 MCP 的智能代理，**无需安装** - 只需一条命令即可在本地启动并运行。它基于 Bun/TypeScript 构建，采用 Actor 模型实现消息驱动架构，提供可嵌入式 UI 前端，通过一行代码即可集成到任何网站中。该代理支持通过可配置的预处理器进行查询扩展，在提交给任何兼容 OpenAI 的 LLM 之前增强用户查询。其"通过 Markdown 可编程"的方法使其特别适合作为网站的客户互动代理。FinClip-Agent 技术先进但部署极其简单，是企业寻求智能对话界面的完美解决方案。
 
 > **希望更好地控制客户支持内容？** 请查看 [finclip-agent-starterkit](https://github.com/Geeksfino/finclip-agent-starterkit) - 这是一个现成的解决方案，可以将自定义知识库与您的代理集成。这有助于通过将响应基于您自己的文档和数据，来提高问答质量并防止幻觉。
 

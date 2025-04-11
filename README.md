@@ -14,7 +14,7 @@
   <a href="https://bun.sh"><img src="https://img.shields.io/badge/powered%20by-Bun-orange.svg" alt="Powered by Bun"></a>
 </p>
 
-FinClip-Agent is an AI-powered customer experience agent built on the actgent framework. It provides automated customer support through natural language interaction via both CLI and web interfaces. **With just a single line of code, you can embed the chat widget into any website** - making it incredibly easy to add AI-powered support to your web applications. The agent can use MCP (Model Context Protocol) server to access knowledge base and other services, providing intelligent responses based on your custom data.
+FinClip-Agent is a super lightweight, MCP-capable agent that requires **zero installation** - just one command to get it up and running locally. Built on Bun/TypeScript with an actor model for message-driven architecture, it provides an embeddable UI frontend that can be integrated into any website with a single line of code. The agent supports query expansion through configurable pre-processors to enhance user queries before submitting to any OpenAI-compatible LLM. Its "programmable via markdown" approach makes it ideal for customer engagement on websites. FinClip-Agent is technically sophisticated yet remarkably simple to deploy, making it the perfect solution for businesses seeking intelligent, conversational interfaces for their web presence.
 
 > **Looking for better control over customer support content?** Check out [finclip-agent-starterkit](https://github.com/Geeksfino/finclip-agent-starterkit) - a ready-to-use solution for integrating custom knowledge bases with your agent. This helps improve Q&A quality and prevents hallucinations by grounding responses in your own documentation and data.
 
