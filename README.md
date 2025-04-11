@@ -463,10 +463,10 @@ The chat widget includes advanced features such as:
 
 When you run `bunx @finogeek/cxagent`, it starts the agent with the CLI interface and also starts the backend servers (API on port 5678 and Streaming on port 5679), but doesn't automatically serve the web frontend.
 
-**For first-time users:** When using `bunx @finogeek/cxagent`, the chat widget script (`finclip-chat.js`) is included in the npm package but not automatically accessible. You'll need to either:
+**For first-time users:** When using `bunx @finogeek/cxagent`, the chat widget script (`finclip-chat.iife.js`) is included in the npm package but not automatically accessible. You'll need to either:
 
 1. Install the package locally first: `bun add @finogeek/cxagent`
-2. Then reference the script from `node_modules/@finogeek/cxagent/web/dist/finclip-chat.js`
+2. Then reference the script from `node_modules/@finogeek/cxagent/web/dist/finclip-chat.iife.js`
 
 Here are options to access the chat frontend:
 
@@ -498,7 +498,7 @@ After installing the package locally with `bun add @finogeek/cxagent`, create a 
   <h1>CxAgent Chat Test</h1>
   
   <script 
-    src="./node_modules/@finogeek/cxagent/web/dist/finclip-chat.js" 
+    src="./node_modules/@finogeek/cxagent/web/dist/finclip-chat.iife.js" 
     data-finclip-chat 
     data-api-url="http://localhost:5678" 
     data-streaming-url="http://localhost:5679"
@@ -564,7 +564,12 @@ bun publish
 
 ## Embedding the Chat Widget
 
-The chat widget (`finclip-chat.js`) is included in the npm package and can be used in multiple ways:
+The chat widget is included in the npm package in two versions:
+
+- `finclip-chat-embed.iife.js` - **Recommended for production use**, includes logging for easier debugging
+- `finclip-chat.iife.js` - Alternative version with minimal logging, suitable for development
+
+The widget can be used in multiple ways:
 
 ### Option 1: Host on a CDN (Recommended for Production)
 
@@ -573,11 +578,11 @@ The chat widget (`finclip-chat.js`) is included in the npm package and can be us
    bun run build:web
    ```
 
-2. Upload the `web/dist/finclip-chat.js` and `web/dist/assets/` directory to your preferred CDN
+2. Upload the `web/dist/finclip-chat-embed.iife.js` and `web/dist/assets/` directory to your preferred CDN
 
 3. Add to your HTML:
    ```html
-   <script src="https://your-cdn.com/finclip-chat.js" data-finclip-chat></script>
+   <script src="https://your-cdn.com/finclip-chat-embed.iife.js" data-finclip-chat></script>
    ```
 
 ### Option 2: Self-host from the npm Package
@@ -585,7 +590,7 @@ The chat widget (`finclip-chat.js`) is included in the npm package and can be us
 If you've installed the package via npm/bun:
 
 ```html
-<script src="./node_modules/@finogeek/cxagent/web/dist/finclip-chat.js" data-finclip-chat></script>
+<script src="./node_modules/@finogeek/cxagent/web/dist/finclip-chat-embed.iife.js" data-finclip-chat></script>
 ```
 
 ### Option 3: Serve from your CxAgent Server
@@ -595,7 +600,7 @@ If running your own cxagent server, you can configure it to serve the widget fil
 1. In your server code, add routes to serve the widget files
 2. Reference it in your HTML:
    ```html
-   <script src="http://your-server:5678/finclip-chat.js" data-finclip-chat></script>
+   <script src="http://your-server:5678/finclip-chat-embed.iife.js" data-finclip-chat></script>
    ```
 
 ### Configuration
@@ -604,7 +609,7 @@ The widget can be configured with data attributes:
 
 ```html
 <script 
-  src="https://your-domain.com/finclip-chat.js" 
+  src="https://your-domain.com/finclip-chat-embed.iife.js" 
   data-finclip-chat 
   data-api-url="https://your-api-server:5678" 
   data-streaming-url="wss://your-streaming-server:5679"
@@ -620,7 +625,7 @@ This will add a floating chat button to your website with default settings.
 For advanced configuration, initialize the widget manually:
 
 ```html
-<script src="https://your-domain.com/finclip-chat.js"></script>
+<script src="https://your-domain.com/finclip-chat-embed.iife.js"></script>
 <script>
   window.initFinClipChat({
     buttonLabel: "Chat with Support",
@@ -628,7 +633,9 @@ For advanced configuration, initialize the widget manually:
     suggestions: ["How do I get started?", "What are your pricing plans?"],
     suggestionsLabel: "Frequently Asked Questions",
     apiUrl: "https://api.your-domain.com",
-    streamingUrl: "https://streaming.your-domain.com"
+    streamingUrl: "https://streaming.your-domain.com",
+    headerTitle: "Welcome to FinClip! 🚀",
+    headerSubtitle: "What would you like to know about our platform?"
   });
 </script>
 ```
@@ -643,6 +650,8 @@ For advanced configuration, initialize the widget manually:
 | `suggestionsLabel` | string | "Try these prompts ✨" | Label for the suggestions section |
 | `apiUrl` | string | "http://localhost:5678" | URL of the API server |
 | `streamingUrl` | string | "http://localhost:5679" | URL of the streaming server |
+| `headerTitle` | string | "Happy to Help! 👋" | Title text displayed in the chat window header |
+| `headerSubtitle` | string | "How can I assist you today?" | Subtitle text displayed in the chat window header |
 
 ### CORS Configuration
 

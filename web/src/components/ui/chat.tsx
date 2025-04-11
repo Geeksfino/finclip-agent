@@ -130,29 +130,36 @@ export function Chat({
 Chat.displayName = "Chat"
 
 export function ChatMessages({
-  messages,
   children,
+  messages,
+  className,
+  ...props
 }: React.PropsWithChildren<{
-  messages: Message[]
-}>) {
+  messages: Message[];
+  className?: string;
+} & React.HTMLAttributes<HTMLDivElement>>) {
   const { containerRef, scrollToBottom, handleScroll, shouldAutoScroll } =
     useAutoScroll([messages])
 
   return (
     <div
-      className="relative overflow-y-auto pb-4"
+      className={cn(
+        "relative overflow-y-auto pb-4",
+        className
+      )}
       ref={containerRef}
       onScroll={handleScroll}
+      {...props}
     >
       {children}
 
       {!shouldAutoScroll && (
         <div className="sticky bottom-0 left-0 flex w-full justify-end">
           <Button
-            onClick={scrollToBottom}
-            className="h-8 w-8 rounded-full ease-in-out animate-in fade-in-0 slide-in-from-bottom-1"
+            variant="outline"
             size="icon"
-            variant="ghost"
+            className="h-7 w-7 rounded-full"
+            onClick={scrollToBottom}
           >
             <ArrowDown className="h-4 w-4" />
           </Button>
@@ -164,14 +171,19 @@ export function ChatMessages({
 
 export const ChatContainer = forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => {
+  React.ComponentPropsWithoutRef<"div">
+>(({ children, className, ...props }, ref) => {
   return (
     <div
       ref={ref}
-      className={cn("grid max-h-full w-full grid-rows-[1fr_auto]", className)}
+      className={cn(
+        "flex h-full w-full flex-col overflow-hidden rounded-md bg-white",
+        className
+      )}
       {...props}
-    />
+    >
+      {children}
+    </div>
   )
 })
 ChatContainer.displayName = "ChatContainer"
