@@ -389,7 +389,7 @@ npm publish
 对于高级配置，手动初始化小部件：
 
 ```html
-<script src="https://your-domain.com/finclip-chat.js"></script>
+<script src="https://your-domain.com/finclip-chat-embed.iife.js"></script>
 <script>
   FinclipChat.init({
     apiUrl: 'http://localhost:5678',
@@ -404,7 +404,9 @@ npm publish
       buttonLabel: '开始聊天',
       placeholderText: '输入您的问题...',
       welcomeMessage: '您好！我能帮您什么忙？'
-    }
+    },
+    headerTitle: '欢迎使用 FinClip! 🚀',
+    headerSubtitle: '有什么可以帮到您的？'
   });
 </script>
 ```

@@ -9,6 +9,8 @@ interface FloatingChatWidgetProps {
   suggestionsLabel?: string
   apiUrl?: string
   streamingUrl?: string
+  headerTitle?: string
+  headerSubtitle?: string
 }
 
 export function FloatingChatWidget({ 
@@ -17,7 +19,9 @@ export function FloatingChatWidget({
   suggestions = [],
   suggestionsLabel,
   apiUrl,
-  streamingUrl
+  streamingUrl,
+  headerTitle = "Happy to Help! 👋",
+  headerSubtitle = "How can I assist you today?"
 }: FloatingChatWidgetProps) {
   const [isOpen, setIsOpen] = useState(initialOpen)
   const chatContainerRef = useRef<HTMLDivElement>(null)
@@ -65,16 +69,27 @@ export function FloatingChatWidget({
     <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end">
       {/* Chat Panel (conditionally rendered) */}
       {isOpen && (
-        <div className="mb-4 w-[380px] h-[600px] bg-white rounded-lg shadow-xl border border-gray-200 flex flex-col overflow-hidden">
-          <div className="p-2 bg-blue-600 text-white flex justify-between items-center">
-            <span className="font-semibold">FinClip Assistant</span>
-            <button 
-              onClick={() => setIsOpen(false)}
-              className="hover:bg-blue-700 p-1 rounded-full"
-            >
-              <X className="h-4 w-4" />
-            </button>
+        <div className="mb-4 w-[400px] h-[700px] bg-white rounded-lg shadow-xl border border-gray-200 flex flex-col overflow-hidden">
+          {/* Decorative Header Area */}
+          <div className="bg-blue-600 text-white flex flex-col">
+            {/* Top Bar with Close Button */}
+            <div className="p-2 flex justify-between items-center">
+              <span className="font-semibold">FinClip Assistant</span>
+              <button 
+                onClick={() => setIsOpen(false)}
+                className="hover:bg-blue-700 p-1 rounded-full"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            
+            {/* Decorative Content Area - similar to HeyGen */}
+            <div className="px-6 py-4 flex flex-col">
+              <h2 className="text-xl font-bold">{headerTitle}</h2>
+              <p className="text-blue-100 mt-1">{headerSubtitle}</p>
+            </div>
           </div>
+          
           <div ref={chatContainerRef} className="flex-1 overflow-hidden">
             <ChatApp 
               suggestions={suggestions} 
