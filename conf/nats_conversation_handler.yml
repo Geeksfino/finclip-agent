@@ -1,0 +1,26 @@
+# NATS Conversation Handler Configuration
+# This file configures the NatsConversationHandler for conversation monitoring
+
+# Whether the handler is enabled
+enabled: true
+
+# NATS server connection
+nats:
+  # NATS server URL
+  url: nats://localhost:4222
+  # Base subject for publishing conversation segments
+  subject: conversation.segments
+
+# Buffering configuration
+buffer:
+  # Minimum number of messages to buffer before publishing
+  min_messages: 2
+  # Maximum idle time in milliseconds before forcing publish
+  max_idle_time: 60000
+
+# Logging configuration
+logging:
+  # Log level (debug, info, warn, error)
+  level: info
+  # Whether to log published segments
+  log_published: true

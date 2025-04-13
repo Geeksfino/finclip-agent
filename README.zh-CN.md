@@ -34,6 +34,7 @@ FinClip-Agent 是一个超轻量级、支持 MCP 的智能代理，**无需安�
 - [高级用法](#高级用法)
   - [MCP 知识库集成](#mcp-知识库集成)
   - [MCP 服务器](#mcp-服务器)
+  - [基于 NATS 的会话监控](#基于-nats-的会话监控)
 - [开发](#开发)
   - [本地开发安装](#本地开发安装)
   - [命令行界面](#命令行界面)
@@ -311,6 +312,75 @@ MCP（Model Context Protocol）服务器允许代理与外部服务和知识库�
 
 - 在当前项目目录下创建一个 'conf' 文件夹
 - 在 'conf' 文件夹中创建一个 'preproc-mcp.json' 文件
+
+### 基于 NATS 的会话监控
+
+FinClip-Agent 支持通过基于 NATS 的会话处理器进行会话监控。此功能允许您捕获、缓冲和发布会话消息到 NATS 服务器，用于监控、合规或分析目的。
+
+#### 配置
+
+要启用会话监控，请在 `conf/nats_conversation_handler.yml` 文件中创建您的配置：
+
+```yaml
+# NATS 会话处理器配置
+# 是否启用处理器
+enabled: true
+
+# NATS 服务器连接
+nats:
+  # NATS 服务器 URL
+  url: nats://localhost:4222
+  # 发布会话段的基础主题
+  subject: conversation.segments
+
+# 缓冲配置
+buffer:
+  # 发布前缓冲的最小消息数
+  min_messages: 2
+  # 强制发布前的最大空闲时间（毫秒）
+  max_idle_time: 60000
+
+# 日志配置
+logging:
+  # 日志级别（debug, info, warn, error）
+  level: info
+  # 是否记录已发布的段
+  log_published: true
+```
+
+#### 工作原理
+
+会话处理器：
+
+1. 按会话 ID 缓冲会话消息
+2. 在以下情况下将消息发布到 NATS：
+   - 缓冲区达到配置的最小消息数
+   - 缓冲区已空闲超过配置的超时时间
+3. 格式化带有元数据和内容的消息用于监控
+
+#### 使用 NATS 订阅者进行测试
+
+包含了一个测试脚本，帮助验证会话监控功能：
+
+```bash
+# 启动 NATS 服务器（使用 Docker）
+docker run -p 4222:4222 -p 8222:8222 --name nats-server -d nats:latest
+
+# 运行 NATS 订阅者测试脚本
+bun run tests/nats-subscriber.ts
+
+# 在另一个终端中，运行代理
+bun run index.ts
+```
+
+测试脚本将显示发布到 NATS 的所有会话段，让您验证监控系统是否正常工作。
+
+#### 使用场景
+
+- **合规监控**：捕获会话以符合监管要求
+- **质量保证**：监控代理响应以进行质量控制
+- **分析**：分析会话模式和用户交互
+- **分布式系统**：在多个服务之间共享会话数据
 
 ## 开发
 

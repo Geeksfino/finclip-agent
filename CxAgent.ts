@@ -3,6 +3,8 @@ import { AgentServiceConfigurator, AgentCoreConfigurator } from "@finogeek/actge
 import { BarePromptTemplate, BareClassifier } from "@finogeek/actgent/agent";
 import { createRuntime } from "@finogeek/actgent/runtime";
 import { KnowledgePreProcessor } from "./KnowledgePreProcessor";
+import { NatsConversationHandler } from "./NatsConversationHandler";
+import * as yaml from "js-yaml";
 
 const runtime = createRuntime();
 
@@ -116,6 +118,60 @@ if (hasMcpConfig && mcpConfigProcessed) {
 }
 
 const CxAgent = agentBuilder.create(BareClassifier, BarePromptTemplate);
+
+// Initialize NATS conversation handler
+(async () => {
+  try {
+    // Check if nats_conversation_handler.yml exists
+    const cwdNatsConfigPath = runtime.path.join(process.cwd(), 'conf', 'nats_conversation_handler.yml');
+    const defaultNatsConfigPath = runtime.path.join(__dirname, 'conf', 'nats_conversation_handler.yml');
+    
+    // Determine which config file to use
+    let natsConfigPath = defaultNatsConfigPath;
+    const hasCwdNatsConfig = await runtime.fs.exists(cwdNatsConfigPath);
+    
+    if (hasCwdNatsConfig) {
+      console.log(`Using nats_conversation_handler.yml from current directory: ${cwdNatsConfigPath}`);
+      natsConfigPath = cwdNatsConfigPath;
+    } else if (await runtime.fs.exists(defaultNatsConfigPath)) {
+      console.log(`Using default nats_conversation_handler.yml`);
+    } else {
+      console.log('No NATS conversation handler configuration found, skipping initialization');
+      return;
+    }
+    
+    // Read and parse the YAML configuration
+    const natsConfigContent = await runtime.fs.readFile(natsConfigPath, 'utf-8');
+    const natsConfig = yaml.load(natsConfigContent) as any;
+    
+    // Check if the handler is enabled
+    if (!natsConfig.enabled) {
+      console.log('NATS conversation handler is disabled in configuration');
+      return;
+    }
+    
+    // Create and configure the handler
+    const natsHandler = new NatsConversationHandler({
+      natsUrl: natsConfig.nats?.url || 'nats://localhost:4222',
+      subject: natsConfig.nats?.subject || 'conversation.segments',
+      minMessagesBeforePublish: natsConfig.buffer?.min_messages || 2,
+      maxIdleTime: natsConfig.buffer?.max_idle_time || 60000
+    });
+    
+    // Register the handler with the agent
+    CxAgent.registerConversationDataHandler(natsHandler);
+    
+    // Set up cleanup on process exit
+    process.on('SIGINT', () => {
+      console.log('Shutting down NATS conversation handler...');
+      natsHandler.close();
+    });
+    
+    console.log('NATS conversation handler initialized and registered with the agent');
+  } catch (error) {
+    console.error('Error setting up NATS conversation handler:', error);
+  }
+})();
 
 // Initialize MCP preprocessor
 (async () => {

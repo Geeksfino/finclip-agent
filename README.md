@@ -34,6 +34,7 @@ FinClip-Agent is a super lightweight, MCP-capable agent that requires **zero ins
 - [Advanced Usage](#advanced-usage)
   - [MCP Knowledge Base Integration](#mcp-knowledge-base-integration)
   - [MCP Servers](#mcp-servers)
+  - [Conversation Monitoring with NATS](#conversation-monitoring-with-nats)
 - [Development](#development)
   - [Installation For Local Development](#installation-for-local-development)
   - [Command Line Interface](#command-line-interface)
@@ -359,6 +360,75 @@ MCP servers here are to be invoked by LLM tool calls. So they are invoked post L
 }
 ```
 For more information, look at relevant MCP specification. Any MCP servers that work with Claude desktop shall work here as well. 
+
+### Conversation Monitoring with NATS
+
+FinClip-Agent supports conversation monitoring through a NATS-based conversation handler. This feature allows you to capture, buffer, and publish conversation messages to a NATS server for monitoring, compliance, or analytics purposes.
+
+#### Configuration
+
+To enable conversation monitoring, create a `conf/nats_conversation_handler.yml` file with your configuration:
+
+```yaml
+# NATS Conversation Handler Configuration
+# Whether the handler is enabled
+enabled: true
+
+# NATS server connection
+nats:
+  # NATS server URL
+  url: nats://localhost:4222
+  # Base subject for publishing conversation segments
+  subject: conversation.segments
+
+# Buffering configuration
+buffer:
+  # Minimum number of messages to buffer before publishing
+  min_messages: 2
+  # Maximum idle time in milliseconds before forcing publish
+  max_idle_time: 60000
+
+# Logging configuration
+logging:
+  # Log level (debug, info, warn, error)
+  level: info
+  # Whether to log published segments
+  log_published: true
+```
+
+#### How It Works
+
+The conversation handler:
+
+1. Buffers conversation messages by session ID
+2. Publishes messages to NATS when either:
+   - The buffer reaches the configured minimum message count
+   - The buffer has been idle for the configured timeout period
+3. Formats messages with metadata and content for monitoring
+
+#### Testing with the NATS Subscriber
+
+A test script is included to help verify the conversation monitoring functionality:
+
+```bash
+# Start a NATS server (using Docker)
+docker run -p 4222:4222 -p 8222:8222 --name nats-server -d nats:latest
+
+# Run the NATS subscriber test script
+bun run tests/nats-subscriber.ts
+
+# In another terminal, run the agent
+bun run index.ts
+```
+
+The test script will display all conversation segments published to NATS, allowing you to verify that the monitoring system is working correctly.
+
+#### Use Cases
+
+- **Compliance Monitoring**: Capture conversations for regulatory compliance
+- **Quality Assurance**: Monitor agent responses for quality control
+- **Analytics**: Analyze conversation patterns and user interactions
+- **Distributed Systems**: Share conversation data between multiple services
 
 ## Installation For Local Development
 
