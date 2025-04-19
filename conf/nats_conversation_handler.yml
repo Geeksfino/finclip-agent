@@ -2,7 +2,7 @@
 # This file configures the NatsConversationHandler for conversation monitoring
 
 # Whether the handler is enabled
-enabled: true
+enabled: false
 
 # NATS server connection
 nats:
