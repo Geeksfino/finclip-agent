@@ -64,8 +64,24 @@ export class NatsConversationHandler implements ConversationDataHandler {
     this.minMessagesBeforePublish = config.minMessagesBeforePublish || 2;
     this.maxIdleTime = config.maxIdleTime || 60000; // 60 seconds
     
-    // Connect to NATS
-    this.connect(config.natsUrl);
+    // Determine the NATS URL: prioritize environment variable over config file
+    const envNatsUrl = process.env.AGENT_NATS_URL;
+    const natsUrlToUse = envNatsUrl || config.natsUrl;
+
+    if (!natsUrlToUse) {
+      console.error("[NatsConversationHandler] NATS URL is not configured via environment variable (AGENT_NATS_URL) or config file.");
+      // Decide how to handle this - maybe throw an error or disable the handler?
+      return; // Or throw new Error("NATS URL not configured");
+    }
+
+    if (envNatsUrl) {
+      console.log(`[NatsConversationHandler] Using NATS URL from environment variable AGENT_NATS_URL: ${envNatsUrl}`);
+    } else {
+      console.log(`[NatsConversationHandler] Using NATS URL from config file: ${config.natsUrl}`);
+    }
+    
+    // Connect to NATS using the determined URL
+    this.connect(natsUrlToUse);
     
     // Start idle buffer check timer
     this.idleCheckTimer = setInterval(() => this.checkIdleBuffers(), 15000); // Check every 15 seconds
