@@ -1,4 +1,110 @@
-# FinClip-Agent
+# FinClip-Agent 🚀
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@finogeek/cxagent"><img src="https://img.shields.io/npm/v/@finogeek/cxagent.svg" alt="npm 版本"></a>
+  <a href="https://www.npmjs.com/package/@finogeek/cxagent"><img src="https://img.shields.io/npm/dm/@finogeek/cxagent.svg" alt="npm 下载量"></a>
+  <a href="https://github.com/Geeksfino/finclip-agent/stargazers"><img src="https://img.shields.io/github/stars/Geeksfino/finclip-agent.svg" alt="GitHub stars"></a>
+  <a href="https://github.com/Geeksfino/finclip-agent/blob/main/LICENSE"><img src="https://img.shields.io/github/license/Geeksfino/finclip-agent.svg" alt="许可证"></a>
+  <a href="https://github.com/Geeksfino/finclip-agent/issues"><img src="https://img.shields.io/github/issues/Geeksfino/finclip-agent.svg" alt="GitHub issues"></a>
+  <a href="https://bun.sh"><img src="https://img.shields.io/badge/powered%20by-Bun-orange.svg" alt="由 Bun 提供支持"></a>
+</p>
+
+<p align="right">
+  <a href="README.md">English</a> |
+  <a href="README.zh-CN.md">简体中文</a>
+</p>
+
+> 只需几分钟，即可将智能对话体嵌入到您的网页！
+
+## 主要特性
+- ⚡️ 即插即用的网页聊天机器人 UI，可嵌入任意网页
+- 🧠 知识库（RAG）集成（可选）
+- 📱 支持 FinClip/微信小程序
+- 🌐 开箱即用支持 HTTP、Server-Sent Events (SSE)、WebSocket 协议
+- 🔌 轻松集成现有系统与 API
+- 📡 NATS 事件流（可选）
+- 🛡️ 内置会话管理与可扩展中间件机制
+- 🚀 可扩展、生产级架构
+- 📝 简单配置与一键部署
+- ...更多精彩功能！
+
+## 快速嵌入你的聊天机器人
+
+### 方案一：开箱即用
+1. **编辑 `.agent.env` 文件**
+   - 在你的项目目录下创建 `.agent.env` 文件，并添加如下参数：
+     ```env
+     LLM_API_KEY=你的OpenAI或兼容API密钥
+     LLM_PROVIDER_URL=https://你的LLM服务端点
+     LLM_MODEL=你的模型名称
+     AGENT_HOST=0.0.0.0
+     AGENT_HTTP_PORT=5678
+     AGENT_STREAM_PORT=5679
+     AGENT_ENABLE_STREAMING=true
+     ```
+2. **运行代理**
+   ```bash
+   bunx @finogeek/cxagent
+   ```
+3. **将聊天机器人嵌入网页**
+   - 只有在使用 `--inspect` 选项运行代理时，才会提供可嵌入脚本和可视化界面：
+     ```bash
+     bunx @finogeek/cxagent --inspect
+     ```
+     默认情况下，Web UI 和脚本会在 `http://localhost:5173` 提供。
+   - 如果没有 `--inspect`，则无法访问可视化界面和嵌入脚本。
+   - 生产环境建议将脚本自行托管到你的静态资源服务器：
+     1. 运行代理并访问 `http://localhost:5173/finclip-chat-embed.iife.js` 下载脚本。
+     2. 上传到你的服务器，并在网页中引用：
+        ```html
+        <script 
+          src="https://your-domain.com/path/to/finclip-chat-embed.iife.js"
+          data-finclip-chat 
+          data-api-url="https://your-api-domain.com" 
+          data-streaming-url="https://your-stream-domain.com">
+        </script>
+        ```
+   - 本地开发可直接引用：
+     ```html
+     <script 
+       src="http://localhost:5173/finclip-chat-embed.iife.js" 
+       data-finclip-chat 
+       data-api-url="http://localhost:5678" 
+       data-streaming-url="http://localhost:5679">
+     </script>
+     ```
+   - 聊天窗口会自动出现在网页上。
+
+### 方案二：克隆 finclip-agent-starterkit（推荐）
+1. **克隆 Starter Kit**
+   ```bash
+   git clone https://github.com/Geeksfino/finclip-agent-starterkit.git
+   cd finclip-agent-starterkit
+   bun install
+   ```
+2. **参考 Starter Kit README 获取详细配置与生产级用法**
+
+### 高级配置
+- **自定义知识库**
+  - 可集成你的文档或数据作为知识源，详见 Starter Kit 或官方文档。
+- **配置会话监控服务**
+  - 启用 NATS 事件流，实现对代理会话的监控与分析，详见 `conf/nats_conversation_handler.yml`。
+
+通过以上步骤，你可以快速部署功能强大的对话体，支持自定义和企业级扩展。
+
+## 概述
+
+FinClip-Agent 是一个超轻量级、支持 MCP 协议的智能代理，**无需安装**，只需一条命令即可本地启动。基于 Bun/TypeScript 和 Actor 模型，提供可嵌入式 UI，支持通过 Markdown 灵活编程、查询扩展和 OpenAI 兼容 LLM，适合企业网站客户互动。
+
+## 目录
+- [概述](#概述)
+- [主要特性](#主要特性)
+- [快速嵌入你的聊天机器人](#快速嵌入你的聊天机器人)
+- [高级配置](#高级配置)
+- [项目结构](#项目结构)
+- [开发](#开发)
+- [许可证](#许可证)
+
 
 <p align="right">
   <a href="README.md">English</a> |
@@ -13,6 +119,20 @@
   <a href="https://github.com/Geeksfino/finclip-agent/issues"><img src="https://img.shields.io/github/issues/Geeksfino/finclip-agent.svg" alt="GitHub issues"></a>
   <a href="https://bun.sh"><img src="https://img.shields.io/badge/powered%20by-Bun-orange.svg" alt="由 Bun 提供支持"></a>
 </p>
+
+> 只需几分钟，即可将智能对话体嵌入到您的网页！
+
+## 主要特性
+- ⚡️ 即插即用的网页聊天机器人 UI，可嵌入任意网页
+- 🧠 知识库（RAG）集成（可选）
+- 📱 支持 FinClip/微信小程序
+- 🌐 开箱即用支持 HTTP、Server-Sent Events (SSE)、WebSocket 协议
+- 🔌 轻松集成现有系统与 API
+- 📡 NATS 事件流（可选）
+- 🛡️ 内置会话管理与可扩展中间件机制
+- 🚀 可扩展、生产级架构
+- 📝 简单配置与一键部署
+- ...更多精彩功能！
 
 FinClip-Agent 是一个超轻量级、支持 MCP 的智能代理，**无需安装** - 只需一条命令即可在本地启动并运行。它基于 Bun/TypeScript 构建，采用 Actor 模型实现消息驱动架构，提供可嵌入式 UI 前端，通过一行代码即可集成到任何网站中。该代理支持通过可配置的预处理器进行查询扩展，在提交给任何兼容 OpenAI 的 LLM 之前增强用户查询。其"通过 Markdown 可编程"的方法使其特别适合作为网站的客户互动代理。FinClip-Agent 技术先进但部署极其简单，是企业寻求智能对话界面的完美解决方案。
 

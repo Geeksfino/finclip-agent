@@ -1,20 +1,113 @@
-# FinClip-Agent
+# FinClip-Agent 🚀
+
+> Embed Intelligent Conversational Agents To Web Pages in Minutes!
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@finogeek/cxagent"><img src="https://img.shields.io/npm/v/@finogeek/cxagent.svg" alt="npm version"></a>
 
 <p align="right">
   <a href="README.md">English</a> |
   <a href="README.zh-CN.md">简体中文</a>
 </p>
 
-<p align="center">
-  <a href="https://www.npmjs.com/package/@finogeek/cxagent"><img src="https://img.shields.io/npm/v/@finogeek/cxagent.svg" alt="npm version"></a>
-  <a href="https://www.npmjs.com/package/@finogeek/cxagent"><img src="https://img.shields.io/npm/dm/@finogeek/cxagent.svg" alt="npm downloads"></a>
-  <a href="https://github.com/Geeksfino/finclip-agent/stargazers"><img src="https://img.shields.io/github/stars/Geeksfino/finclip-agent.svg" alt="GitHub stars"></a>
-  <a href="https://github.com/Geeksfino/finclip-agent/blob/main/LICENSE"><img src="https://img.shields.io/github/license/Geeksfino/finclip-agent.svg" alt="license"></a>
-  <a href="https://github.com/Geeksfino/finclip-agent/issues"><img src="https://img.shields.io/github/issues/Geeksfino/finclip-agent.svg" alt="GitHub issues"></a>
-  <a href="https://bun.sh"><img src="https://img.shields.io/badge/powered%20by-Bun-orange.svg" alt="Powered by Bun"></a>
-</p>
+## Features
+- ⚡️ Plug-and-play web chatbot UI, embeddable to any web page
+- 🧠 Knowledge base (RAG) integration (optional)
+- 📱 FinClip/WeChat Mini-Program support
+- 🌐 Out-of-the-box support for HTTP, Server-Sent Events (SSE), and WebSocket protocols
+- 🔌 Easy integration with existing systems and APIs
+- 📡 Event streaming with NATS (optional)
+- 🛡️ Built-in session management and extensible middleware support
+- 🚀 Scalable, production-ready architecture
+- 📝 Simple configuration and deployment
+- ...and more! 
+
+## Simple Steps To Embed A Chatbot To Your Website
+
+### Option 1: Out-of-the-Box Setup
+1. **Edit the `.agent.env` file**
+   - Create a file named `.agent.env` in your project directory.
+   - Add your LLM API key and other relevant parameters, for example:
+     ```env
+     LLM_API_KEY=your-openai-or-compatible-key
+     LLM_PROVIDER_URL=https://your-llm-provider-endpoint
+     LLM_MODEL=your-model-name
+     AGENT_HOST=0.0.0.0
+     AGENT_HTTP_PORT=5678
+     AGENT_STREAM_PORT=5679
+     AGENT_ENABLE_STREAMING=true
+     ```
+2. **Run the agent**
+   ```bash
+   bunx @finogeek/cxagent
+   ```
+3. **Embed the chatbot into your web page**
+   - **Where to get the `finclip-chat` script:**
+     - The embeddable script and inspector UI are only available when you run the agent with the `--inspect` option:
+       ```bash
+       bunx @finogeek/cxagent --inspect
+       ```
+       By default, this serves the web UI and script at `http://localhost:5173`.
+     - If you run the agent **without** `--inspect` (just `bunx @finogeek/cxagent`), the inspector UI and embeddable script will **not** be available.
+     - For production or public deployment, you can self-host the script from your own domain or static file server:
+       - **How to obtain and self-host:**
+         1. Download the script after starting the agent with `--inspect`:
+            ```bash
+            curl -O http://localhost:5173/finclip-chat-embed.iife.js
+            ```
+         2. Upload this file to your web server or static hosting (e.g., AWS S3, Vercel, Netlify, your own Nginx/Apache server).
+         3. Update the `<script src="...">` in your web page to point to your hosted URL, for example:
+            ```html
+            <script 
+              src="https://your-domain.com/path/to/finclip-chat-embed.iife.js"
+              data-finclip-chat 
+              data-api-url="https://your-api-domain.com"
+              data-streaming-url="https://your-stream-domain.com">
+            </script>
+            ```
+     - (If a CDN is available, use the provided CDN link here.)
+   - Add the following script tag to any web page where you want to provide chat service:
+     ```html
+     <script 
+       src="http://localhost:5173/finclip-chat-embed.iife.js" 
+       data-finclip-chat 
+       data-api-url="http://localhost:5678" 
+       data-streaming-url="http://localhost:5679">
+     </script>
+     ```
+   - The chatbot widget will appear on your site, ready to interact with users.
+
+### Option 2: Clone finclip-agent-starterkit (Recommended)
+1. **Clone the Starter Kit**
+   ```bash
+   git clone https://github.com/Geeksfino/finclip-agent-starterkit.git
+   cd finclip-agent-starterkit
+   bun install
+   ```
+2. **Follow the detailed instructions in the Starter Kit README**
+   - The starter kit provides ready-to-use configuration, knowledge base integration, and more advanced features for production deployment.
+
+### Advanced Configuration
+- **Use your own knowledge base**
+  - Integrate your documents or data as a knowledge source for the agent. See the starter kit or documentation for details.
+- **Configure a monitoring service**
+  - Enable NATS event streaming to monitor agent-user conversations for analytics, compliance, or quality assurance.
+  - See the `conf/nats_conversation_handler.yml` example for setup.
+
+With these simple steps, you can quickly deploy a powerful conversational agent on your website, with options for customization and enterprise-grade features.
+
+## Overview
 
 FinClip-Agent is a super lightweight, MCP-capable agent that requires **zero installation** - just one command to get it up and running locally. Built on Bun/TypeScript with an actor model for message-driven architecture, it provides an embeddable UI frontend that can be integrated into any website with a single line of code. The agent supports query expansion through configurable pre-processors to enhance user queries before submitting to any OpenAI-compatible LLM. Its "programmable via markdown" approach makes it ideal for customer engagement on websites. FinClip-Agent is technically sophisticated yet remarkably simple to deploy, making it the perfect solution for businesses seeking intelligent, conversational interfaces for their web presence.
+
+## Table of Contents
+- [Overview](#overview)
+- [Features](#features)
+- [Simple Steps To Embed A Chatbot To Your Website](#simple-steps-to-embed-a-chatbot-to-your-website)
+- [Advanced Configuration](#advanced-configuration)
+- [Project Structure](#project-structure)
+- [Development](#development)
+- [License](#license)
 
 > **Looking for better control over customer support content?** Check out [finclip-agent-starterkit](https://github.com/Geeksfino/finclip-agent-starterkit) - a ready-to-use solution for integrating custom knowledge bases with your agent. This helps improve Q&A quality and prevents hallucinations by grounding responses in your own documentation and data.
 
@@ -45,7 +138,7 @@ FinClip-Agent is a super lightweight, MCP-capable agent that requires **zero ins
   - [Development Workflow](#development-workflow)
 - [License](#license)
 
-## Quick start
+## Setup
 
 First make sure the following prerequisites are met:
 
@@ -488,9 +581,9 @@ This will start:
 - Streaming Server on port 5679 (handles real-time streaming of AI responses)
 - UI Server (when using `--ui` option) on port 5173 by default (configurable with `--ui-port`)
 
-#### UI Mode
+#### Inspector UI Mode
 
-The `--ui` option starts a web server that displays your agent's configuration in a user-friendly interface. This is useful for:
+The `--inspect` option starts a web server that displays your agent's configuration in a user-friendly interface. This is useful for:
 
 - Visualizing and inspecting your `brain.md` content
 - Understanding your agent's configuration
@@ -499,9 +592,9 @@ The `--ui` option starts a web server that displays your agent's configuration i
 When running via `bunx`, you can also use the UI mode:
 
 ```bash
-bunx @finogeek/cxagent --ui
+bunx @finogeek/cxagent --inspect
 # or with custom port
-bunx @finogeek/cxagent --ui --ui-port 3000
+bunx @finogeek/cxagent --inspect --inspect-port 3000
 ```
 
 The UI will use the `brain.md` file from your current working directory if available. If no `brain.md` is found, it will display a default template.
