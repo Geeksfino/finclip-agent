@@ -1,6 +1,6 @@
 # FinClip-Agent 🚀
 
-> Embed Intelligent Conversational Agents To Web Pages in Minutes!
+<h2 align="center"><strong>Embed Intelligent Conversational Agents To Any Web Pages in Minutes!</strong></h2>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@finogeek/cxagent"><img src="https://img.shields.io/npm/v/@finogeek/cxagent.svg" alt="npm version"></a>

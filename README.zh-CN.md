@@ -1,5 +1,7 @@
 # FinClip-Agent 🚀
 
+<h2 align="center"><strong>几分钟内将智能对话体嵌入到任意网页！</strong></h2>
+
 <p align="center">
   <a href="https://www.npmjs.com/package/@finogeek/cxagent"><img src="https://img.shields.io/npm/v/@finogeek/cxagent.svg" alt="npm 版本"></a>
   <a href="https://www.npmjs.com/package/@finogeek/cxagent"><img src="https://img.shields.io/npm/dm/@finogeek/cxagent.svg" alt="npm 下载量"></a>
