@@ -4,6 +4,12 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@finogeek/cxagent"><img src="https://img.shields.io/npm/v/@finogeek/cxagent.svg" alt="npm version"></a>
+  <a href="https://www.npmjs.com/package/@finogeek/cxagent"><img src="https://img.shields.io/npm/dm/@finogeek/cxagent.svg" alt="npm downloads"></a>
+  <a href="https://github.com/Geeksfino/finclip-agent/stargazers"><img src="https://img.shields.io/github/stars/Geeksfino/finclip-agent.svg" alt="GitHub stars"></a>
+  <a href="https://github.com/Geeksfino/finclip-agent/blob/main/LICENSE"><img src="https://img.shields.io/github/license/Geeksfino/finclip-agent.svg" alt="license"></a>
+  <a href="https://github.com/Geeksfino/finclip-agent/issues"><img src="https://img.shields.io/github/issues/Geeksfino/finclip-agent.svg" alt="GitHub issues"></a>
+  <a href="https://bun.sh"><img src="https://img.shields.io/badge/powered%20by-Bun-orange.svg" alt="Powered by Bun"></a>
+</p>
 
 <p align="right">
   <a href="README.md">English</a> |
