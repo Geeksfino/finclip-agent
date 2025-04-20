@@ -19,6 +19,16 @@ jobs:
       - name: Build package
         run: bun run build:all
 
+      - name: Who am I (npm auth debug)
+        run: npm whoami
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Show npm config (debug)
+        run: npm config list
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Publish to npm
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
