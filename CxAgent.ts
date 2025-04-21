@@ -8,111 +8,62 @@ import * as yaml from "js-yaml";
 
 const runtime = createRuntime();
 
-// Load the agent configuration from a markdown file
-// First check if brain.md exists in the current working directory
-const cwdBrainPath = runtime.path.join(process.cwd(), 'brain.md');
-const defaultBrainPath = runtime.path.join(__dirname, 'brain.md');
-
-// Determine which brain.md file to use
-let configPath = defaultBrainPath;
-try {
-  await runtime.fs.stat(cwdBrainPath);
-  // If we reach here, the file exists in the current directory
-  console.log(`Using brain.md from current directory: ${cwdBrainPath}`);
-  configPath = cwdBrainPath;
-} catch (error) {
-  // File doesn't exist in current directory, use the default
-  console.log(`No brain.md found in current directory, using default`);
-}
-
-const agentConfig = await AgentCoreConfigurator.loadMarkdownConfig(configPath);
+// --- Step 1: Define Base Path for User Configs ---
+const userConfigBasePath = process.cwd();
+console.log(`ℹ️ Base path for user configurations: ${userConfigBasePath}`);
 
 // Load the agent runtime environment
-// Check if .agent.env exists in current working directory first, otherwise use the one in the package
-const cwdEnvPath = runtime.path.join(process.cwd(), '.agent.env');
-const hasCustomEnv = await runtime.fs.exists(cwdEnvPath);
+// --- Step 2: Handle .agent.env (Informational Check, Load via Configurator) ---
+const cwdEnvPath = runtime.path.join(userConfigBasePath, '.agent.env'); // Use userConfigBasePath
+const hasAgentEnvFile = await runtime.fs.exists(cwdEnvPath);
 
-if (hasCustomEnv) {
-  console.log(`Using .agent.env from current directory: ${cwdEnvPath}`);
+if (hasAgentEnvFile) {
+  console.log(`ℹ️ Found .agent.env file: ${cwdEnvPath}. Environment variables usually take precedence.`);
 } else {
-  console.log(`No .agent.env found in current directory. Agent will not work without proper LLM configurations`);
+  console.log(`ℹ️ No .agent.env file found. Relying on environment variables.`);
 }
+// AgentServiceConfigurator should prioritize environment variables.
+// Pass userConfigBasePath so it knows where to look if it needs the file.
+const svcConfig = await AgentServiceConfigurator.getAgentConfiguration(userConfigBasePath);
 
-// Pass the current working directory as the base path if a custom .agent.env exists there
-const basePath = hasCustomEnv ? process.cwd() : __dirname;
-const svcConfig = await AgentServiceConfigurator.getAgentConfiguration(basePath);
+// Determine the path for brain.md
+// --- Step 3: Handle brain.md (Check CWD, Fallback to Default in __dirname) ---
+const cwdBrainPath = runtime.path.join(userConfigBasePath, 'brain.md');
+const hasCustomBrain = await runtime.fs.exists(cwdBrainPath);
+const brainLoadPath = hasCustomBrain ? userConfigBasePath : __dirname; // Use CWD if brain.md exists, else use default path
+
+if (hasCustomBrain) {
+  console.log(`Using brain.md from current directory: ${cwdBrainPath}`);
+} else {
+  console.log(`No brain.md found in current directory, using default.`);
+}
+// Pass the determined path to loadMarkdownConfig
+const agentConfig = await AgentCoreConfigurator.loadMarkdownConfig(brainLoadPath);
 
 // Check for MCP configuration file
-const mcpConfigPath = runtime.path.join(basePath, 'conf', 'mcp_config.json');
+// --- Step 4: Handle MCP Config (Simplified - Use Directly) ---
+const mcpConfigPath = runtime.path.join(userConfigBasePath, 'conf', 'mcp_config.json'); // Always look in CWD/conf
 const hasMcpConfig = await runtime.fs.exists(mcpConfigPath);
-let mcpConfigProcessed = false;
 
 if (hasMcpConfig) {
-  console.log(`Found MCP configuration: ${mcpConfigPath}`);
-  
-  try {
-    // Read and preprocess the MCP configuration file
-    const mcpConfigContent = await runtime.fs.readFile(mcpConfigPath, 'utf-8');
-    let mcpConfig;
-    
-    try {
-      mcpConfig = JSON.parse(mcpConfigContent);
-      
-      // Process environment variables in the configuration
-      if (mcpConfig.mcpServers) {
-        const home = process.env.HOME || '';
-        const cwd = process.cwd();
-        
-        // Process each server configuration
-        for (const serverName in mcpConfig.mcpServers) {
-          const server = mcpConfig.mcpServers[serverName];
-          
-          // Process args array
-          if (server.args && Array.isArray(server.args)) {
-            server.args = server.args.map((arg: unknown) => {
-              if (typeof arg === 'string') {
-                return arg.replace(/\$\{HOME\}/g, home)
-                         .replace(/\$\{CWD\}/g, cwd);
-              }
-              return arg;
-            });
-          }
-          
-          // Process cwd if present
-          if (server.cwd && typeof server.cwd === 'string') {
-            server.cwd = server.cwd.replace(/\$\{HOME\}/g, home)
-                               .replace(/\$\{CWD\}/g, cwd);
-          }
-        }
-      }
-      
-      // Write the processed configuration to a temporary file
-      const tempMcpConfigPath = runtime.path.join(basePath, 'conf', 'mcp_config_processed.json');
-      await runtime.fs.writeFile(tempMcpConfigPath, JSON.stringify(mcpConfig, null, 2));
-      
-      console.log(`Processed MCP configuration and saved to: ${tempMcpConfigPath}`);
-      mcpConfigProcessed = true;
-    } catch (parseError: unknown) {
-      const errorMessage = parseError instanceof Error ? parseError.message : String(parseError);
-      console.error(`Error parsing MCP configuration: ${errorMessage}`);
-    }
-  } catch (readError: unknown) {
-    const errorMessage = readError instanceof Error ? readError.message : String(readError);
-    console.error(`Error reading MCP configuration: ${errorMessage}`);
-  }
+  console.log(`Found MCP configuration, will use directly: ${mcpConfigPath}`);
+} else {
+  console.log(`No MCP configuration found at ${mcpConfigPath}`);
 }
 
-// Create the agent with MCP tools if configuration exists and was processed successfully
+// Create the agent with MCP tools if configuration exists
+// --- Step 5: Initialize Agent ---
 let agentBuilder = new AgentBuilder(agentConfig, svcConfig);
 
-// Add MCP tools if configuration exists and was processed successfully
-if (hasMcpConfig && mcpConfigProcessed) {
+// Add MCP tools if configuration exists
+if (hasMcpConfig) { // Simplified condition
   try {
-    const tempMcpConfigPath = runtime.path.join(basePath, 'conf', 'mcp_config_processed.json');
-    agentBuilder = agentBuilder.withMcpTools(tempMcpConfigPath);
+    // Use the original config path directly
+    agentBuilder = agentBuilder.withMcpTools(mcpConfigPath); // Use original path
   } catch (mcpError: unknown) {
     const errorMessage = mcpError instanceof Error ? mcpError.message : String(mcpError);
-    console.error(`Error initializing MCP tools: ${errorMessage}`);
+    // Keep error handling for withMcpTools itself
+    console.error(`Error initializing MCP tools from ${mcpConfigPath}: ${errorMessage}`);
     console.warn('Continuing without MCP tools due to initialization error');
   }
 }
@@ -123,7 +74,7 @@ const CxAgent = agentBuilder.create(BareClassifier, BarePromptTemplate);
 (async () => {
   try {
     // Check if nats_conversation_handler.yml exists
-    const cwdNatsConfigPath = runtime.path.join(process.cwd(), 'conf', 'nats_conversation_handler.yml');
+    const cwdNatsConfigPath = runtime.path.join(userConfigBasePath, 'conf', 'nats_conversation_handler.yml');
     const defaultNatsConfigPath = runtime.path.join(__dirname, 'conf', 'nats_conversation_handler.yml');
     
     // Determine which config file to use
@@ -177,7 +128,7 @@ const CxAgent = agentBuilder.create(BareClassifier, BarePromptTemplate);
 (async () => {
   try {
     // Check if preproc-mcp.json exists in the current working directory
-    const cwdPreprocPath = runtime.path.join(process.cwd(), 'conf', 'preproc-mcp.json');
+    const cwdPreprocPath = runtime.path.join(userConfigBasePath, 'conf', 'preproc-mcp.json');
     const defaultPreprocPath = runtime.path.join(__dirname, 'conf', 'preproc-mcp.json');
     
     // Determine which preproc-mcp.json file to use
