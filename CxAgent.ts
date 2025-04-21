@@ -30,7 +30,7 @@ const svcConfig = await AgentServiceConfigurator.getAgentConfiguration(userConfi
 // --- Step 3: Handle brain.md (Check CWD, Fallback to Default in __dirname) ---
 const cwdBrainPath = runtime.path.join(userConfigBasePath, 'brain.md');
 const hasCustomBrain = await runtime.fs.exists(cwdBrainPath);
-const brainLoadPath = hasCustomBrain ? userConfigBasePath : __dirname; // Use CWD if brain.md exists, else use default path
+const brainLoadPath = hasCustomBrain ? cwdBrainPath : runtime.path.join(__dirname, 'brain.md'); // Use CWD path if brain.md exists, else use default path
 
 if (hasCustomBrain) {
   console.log(`Using brain.md from current directory: ${cwdBrainPath}`);
