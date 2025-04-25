@@ -1,6 +1,6 @@
 {
   "name": "@finogeek/cxagent",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -35,7 +35,9 @@
     "README.zh-CN.md",
     "brain.md",
     "dist/",
-    "web/",
+    "web/finclip-chat.iife.js",
+    "web/finclip-chat-embed.iife.js",
+    "web/style.css",
     "!dist/**/*.map",
     "!dist/tests/"
   ],
