@@ -80,12 +80,12 @@ export class KnowledgePreProcessor implements QueryPreProcessor {
    * Process a query by enhancing it with knowledge base information
    * @param query The original query
    * @param sessionId The session ID
-   * @returns The enhanced query
+   * @returns The processed result with user and optional systemContext
    */
-  async process(query: string, sessionId: string): Promise<string> {
+  async process(query: string, sessionId: string): Promise<{ user: string; systemContext?: string }> {
     if (!this.mcpTool) {
       console.warn('MCP tool not initialized for query preprocessing, returning original query');
-      return query;
+      return { user: query };
     }
     
     try {
@@ -98,7 +98,7 @@ export class KnowledgePreProcessor implements QueryPreProcessor {
       // result is a StringOutput object, extract the content
       const content = result.getContent();
       
-      // If we have content, try to parse it and add to the query
+      // If we have content, try to parse it and add to the systemContext
       if (content && content.trim()) {
         try {
           // The content is likely a JSON string from McpTool's execute method
@@ -110,25 +110,24 @@ export class KnowledgePreProcessor implements QueryPreProcessor {
               .filter((item: any) => item.type === 'text' && item.text)
               .map((item: any) => item.text)
               .join('\n');
-              
+            
             if (textContent) {
-              return `${query}\n\nKnowledge Base: ${textContent}`;
+              return { user: query, systemContext: textContent };
             }
           }
-          
-          // If we can't extract from the standard format, use the whole content
-          return `${query}\n\nKnowledge Base: ${JSON.stringify(parsedContent)}`;
+          // If we can't extract from the standard format, use the whole parsed content as systemContext
+          return { user: query, systemContext: JSON.stringify(parsedContent) };
         } catch (e) {
           // If it's not parseable JSON, use as plain text
-          return `${query}\n\nKnowledge Base: ${content}`;
+          return { user: query, systemContext: content };
         }
       }
       
-      // If no useful content was returned, use the original query
-      return query;
+      // If no useful content was returned, use the original query only
+      return { user: query };
     } catch (error) {
       console.error(`Error in query preprocessing: ${error}`);
-      return query; // Fall back to original query
+      return { user: query };
     }
   }
 }
