@@ -18,6 +18,12 @@ export class KnowledgePreProcessor implements QueryPreProcessor {
   async initialize(configPath?: string): Promise<boolean> {
     try {
       const mcpConfigPath = configPath || runtime.path.join(process.cwd(), 'conf', 'preproc-mcp.json');
+      // Check if the KB file exists via config
+      const kbExists = await this.checkKnowledgeBaseExists(mcpConfigPath);
+      if (!kbExists) {
+        console.warn('KnowledgePreProcessor: No valid KB file found in preproc-mcp.json. Preprocessor will not be enabled.');
+        return false;
+      }
       const mcpTools = await McpConfigurator.loadTools(mcpConfigPath);
       
       // Find the retrieve_context tool
@@ -36,7 +42,40 @@ export class KnowledgePreProcessor implements QueryPreProcessor {
       return false;
     }
   }
-  
+
+  /**
+   * Parses the MCP config for '--embeddings' and checks if the KB file exists.
+   * Returns true if found and exists, false otherwise.
+   */
+  private async checkKnowledgeBaseExists(mcpConfigPath: string): Promise<boolean> {
+    const fs = await import('fs');
+    try {
+      const configContent = await runtime.fs.readFile(mcpConfigPath, 'utf8');
+      const configObj = JSON.parse(configContent);
+      if (configObj.mcpServers) {
+        for (const serverName in configObj.mcpServers) {
+          const server = configObj.mcpServers[serverName];
+          if (Array.isArray(server.args)) {
+            const idx = server.args.indexOf('--embeddings');
+            if (idx !== -1 && typeof server.args[idx + 1] === 'string') {
+              const kbPath = server.args[idx + 1];
+              if (kbPath && fs.existsSync(kbPath)) {
+                console.log(`KnowledgePreProcessor: KB file found at ${kbPath} (from --embeddings flag).`);
+                return true;
+              } else {
+                console.warn(`KnowledgePreProcessor: KB file does not exist at path: ${kbPath} (from --embeddings flag)`);
+              }
+            }
+          }
+        }
+      }
+      return false;
+    } catch (e) {
+      console.warn('KnowledgePreProcessor: Error parsing MCP config for KB path:', e);
+      return false;
+    }
+  }
+
   /**
    * Process a query by enhancing it with knowledge base information
    * @param query The original query

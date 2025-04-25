@@ -127,29 +127,29 @@ const CxAgent = agentBuilder.create(BareClassifier, BarePromptTemplate);
 // Initialize MCP preprocessor
 (async () => {
   try {
-    // Check if preproc-mcp.json exists in the current working directory
+    // Only attempt to instantiate if preproc-mcp.json exists in either cwd or default
     const cwdPreprocPath = runtime.path.join(userConfigBasePath, 'conf', 'preproc-mcp.json');
     const defaultPreprocPath = runtime.path.join(__dirname, 'conf', 'preproc-mcp.json');
-    
-    // Determine which preproc-mcp.json file to use
-    let preprocPath = defaultPreprocPath;
-    const hasCwdPreproc = await runtime.fs.exists(cwdPreprocPath);
-    
-    if (hasCwdPreproc) {
+
+    let preprocPath = undefined;
+    if (await runtime.fs.exists(cwdPreprocPath)) {
       console.log(`Using preproc-mcp.json from current directory: ${cwdPreprocPath}`);
       preprocPath = cwdPreprocPath;
+    } else if (await runtime.fs.exists(defaultPreprocPath)) {
+      console.log(`Using default preproc-mcp.json from package: ${defaultPreprocPath}`);
+      preprocPath = defaultPreprocPath;
+    } else {
+      console.log('No preproc-mcp.json found, skipping MCP Knowledge preprocessor initialization');
+      return;
     }
-    
-    // Create the preprocessor and initialize it
-    const preprocessor = new KnowledgePreProcessor();
-    const initialized = await preprocessor.initialize(preprocPath);
-    
-    if (initialized) {
-      // Set the preprocessor on the agent
+
+    // Use the factory function for consistency
+    const preprocessor = await import('./KnowledgePreProcessor').then(mod => mod.createMcpKnowledgePreProcessor(preprocPath));
+    if (preprocessor) {
       CxAgent.setQueryPreProcessor(preprocessor);
       console.log('MCP Knowledge preprocessor initialized and set up with the agent');
     } else {
-      console.log('No MCP Knowledge preprocessor configured');
+      console.log('No MCP Knowledge preprocessor configured (initialization failed or KB file missing)');
     }
   } catch (error) {
     console.error('Error setting up MCP Knowledge preprocessor:', error);
