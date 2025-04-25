@@ -1,6 +1,6 @@
 {
   "name": "@finogeek/cxagent",
-  "version": "1.2.3.1",
+  "version": "1.2.4",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
