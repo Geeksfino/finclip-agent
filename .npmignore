@@ -34,4 +34,4 @@ web/vite.config.ts
 web/tsconfig.json
 web/tailwind.config.js
 web/postcss.config.js
-web/dist/
+

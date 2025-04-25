@@ -1,6 +1,6 @@
 {
   "name": "@finogeek/cxagent",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -11,7 +11,7 @@
     "dev": "bun run index.ts",
     "start": "bun run dist/index.js",
     "build": "bun tsc && bun run build:assets && chmod +x dist/index.js",
-    "build:assets": "cp brain.md dist/ && mkdir -p dist/conf && cp -r conf/* dist/conf/ 2>/dev/null || true && mkdir -p dist/web/dist && cp web/dist/finclip-chat.iife.js dist/web/dist/ && cp web/dist/finclip-chat-embed.iife.js dist/web/dist/ && cp web/dist/style.css dist/web/dist/",
+    "build:assets": "cp brain.md dist/ && mkdir -p dist/conf && cp -r conf/* dist/conf/ 2>/dev/null || true",
     "build:web": "cd web && bun install && bun run build",
     "build:inspector": "cd inspector && bun tsc",
     "build:all": "bun run build:web && bun run build && bun run build:inspector",
@@ -30,14 +30,15 @@
     "bun": ">=1.2.0"
   },
   "files": [
+    "dist/",
     "LICENSE",
     "README.md",
     "README.zh-CN.md",
     "brain.md",
     "dist/",
-    "web/finclip-chat.iife.js",
-    "web/finclip-chat-embed.iife.js",
-    "web/style.css",
+    "web/dist/finclip-chat.iife.js",
+    "web/dist/finclip-chat-embed.iife.js",
+    "web/dist/style.css",
     "!dist/**/*.map",
     "!dist/tests/"
   ],
