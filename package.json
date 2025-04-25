@@ -14,7 +14,7 @@
     "build:assets": "cp brain.md dist/ && mkdir -p dist/conf && cp -r conf/* dist/conf/ 2>/dev/null || true && mkdir -p dist/web/dist && cp web/dist/finclip-chat.iife.js dist/web/dist/ && cp web/dist/finclip-chat-embed.iife.js dist/web/dist/ && cp web/dist/style.css dist/web/dist/",
     "build:web": "cd web && bun install && bun run build",
     "build:inspector": "cd inspector && bun tsc",
-    "build:all": "bun run build && bun run build:web && bun run build:inspector",
+    "build:all": "bun run build:web && bun run build && bun run build:inspector",
     "prepublishOnly": "bun run build:all",
     "test": "vitest run",
     "test:watch": "vitest",
