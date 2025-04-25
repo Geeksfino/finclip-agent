@@ -21,17 +21,10 @@ jobs:
       - name: Build package
         run: bun run build:all
 
-      - name: Show npm config (debug)
-        run: npm config list
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
       - name: Write npm token to .npmrc
-        run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
 
       - name: Publish to npm
-        run: bun publish --access public
+        run: bun publish --access public --verbose
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
